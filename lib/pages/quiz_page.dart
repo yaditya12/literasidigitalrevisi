@@ -40,7 +40,27 @@ class _QuizPageState extends State<QuizPage> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      body: Padding(
+      // Tombol LANJUT/SELESAI di bawah, selalu terlihat
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        child: SizedBox(
+          height: 55,
+          child: ElevatedButton(
+            onPressed: _selectedAnswer == null ? null : _nextQuestion,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6A11CB),
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: Colors.grey.shade300,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            ),
+            child: Text(
+              _currentIndex == questions.length - 1 ? "SELESAI" : "LANJUT",
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -64,7 +84,7 @@ class _QuizPageState extends State<QuizPage> {
 
             // Opsi Jawaban
             ...List.generate(
-              (currentQuestion['options'] as List).length, 
+              (currentQuestion['options'] as List).length,
               (index) {
                 String optionText = currentQuestion['options'][index];
                 bool isSelected = _selectedAnswer == index;
@@ -97,8 +117,8 @@ class _QuizPageState extends State<QuizPage> {
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.grey),
                             ),
-                            child: isSelected 
-                                ? const Icon(Icons.check, color: Colors.white, size: 18) 
+                            child: isSelected
+                                ? const Icon(Icons.check, color: Colors.white, size: 18)
                                 : Center(child: Text("${String.fromCharCode(65 + index)}", style: const TextStyle(fontWeight: FontWeight.bold))),
                           ),
                           const SizedBox(width: 15),
@@ -117,27 +137,9 @@ class _QuizPageState extends State<QuizPage> {
                     ),
                   ),
                 );
-              }
+              },
             ),
-
-            const Spacer(),
-
-            // Tombol Lanjut / Selesai
-            SizedBox(
-              height: 55,
-              child: ElevatedButton(
-                onPressed: _selectedAnswer == null ? null : _nextQuestion,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6A11CB),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
-                child: Text(
-                  _currentIndex == questions.length - 1 ? "SELESAI" : "LANJUT",
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
-            ),
+            const SizedBox(height: 10),
           ],
         ),
       ),

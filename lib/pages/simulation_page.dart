@@ -115,7 +115,48 @@ class _SimulationPageState extends State<SimulationPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(title: const Text("Simulasi Kasus"), backgroundColor: const Color(0xFF6A11CB), foregroundColor: Colors.white),
-      body: Padding(
+      // Tombol jawaban / lanjut selalu terlihat di bawah
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        child: !_showExplanation
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text("Menurut Anda, apakah ini aman?", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade400, padding: const EdgeInsets.symmetric(vertical: 14)),
+                          icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
+                          label: const Text("BAHAYA / HOAKS", style: TextStyle(color: Colors.white, fontSize: 13)),
+                          onPressed: () => _checkAnswer(false),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: const EdgeInsets.symmetric(vertical: 14)),
+                          icon: const Icon(Icons.gpp_good, color: Colors.white),
+                          label: const Text("AMAN", style: TextStyle(color: Colors.white)),
+                          onPressed: () => _checkAnswer(true),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            : SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A11CB), padding: const EdgeInsets.symmetric(vertical: 15)),
+                  onPressed: _nextCase,
+                  child: Text(_currentIndex < _cases.length - 1 ? "LANJUT KASUS BERIKUTNYA" : "SELESAIKAN SIMULASI", style: const TextStyle(color: Colors.white)),
+                ),
+              ),
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -123,63 +164,48 @@ class _SimulationPageState extends State<SimulationPage> {
             Text("Kasus ${_currentIndex + 1} dari ${_cases.length}", style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             LinearProgressIndicator(value: (_currentIndex + 1) / _cases.length, backgroundColor: Colors.grey.shade300, color: const Color(0xFF6A11CB)),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(25),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 15)]),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                      decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(20)),
-                      child: Text(currentCase['type'], style: TextStyle(color: Colors.orange.shade800, fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(height: 30),
-                    Text('"${currentCase['content']}"', style: const TextStyle(fontSize: 18, fontStyle: FontStyle.italic, height: 1.5), textAlign: TextAlign.center),
-                  ],
-                ),
+            // Kartu konten kasus
+            Container(
+              padding: const EdgeInsets.all(25),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 15)]),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                    decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(20)),
+                    child: Text(currentCase['type'], style: TextStyle(color: Colors.orange.shade800, fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('"${currentCase['content']}"', style: const TextStyle(fontSize: 17, fontStyle: FontStyle.italic, height: 1.6), textAlign: TextAlign.center),
+                ],
               ),
             ),
-            const SizedBox(height: 30),
 
-            if (!_showExplanation) ...[
-              const Text("Menurut Anda, apakah ini aman?", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade400, padding: const EdgeInsets.symmetric(vertical: 15)),
-                      icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
-                      label: const Text("BAHAYA / HOAKS", style: TextStyle(color: Colors.white)),
-                      onPressed: () => _checkAnswer(false),
-                    ),
-                  ),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: const EdgeInsets.symmetric(vertical: 15)),
-                      icon: const Icon(Icons.gpp_good, color: Colors.white),
-                      label: const Text("AMAN", style: TextStyle(color: Colors.white)),
-                      onPressed: () => _checkAnswer(true),
-                    ),
-                  ),
-                ],
-              )
-            ] else ...[
+            // Penjelasan setelah menjawab
+            if (_showExplanation) ...[
+              const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: _isAnswerCorrect ? Colors.green.shade50 : Colors.red.shade50, borderRadius: BorderRadius.circular(15), border: Border.all(color: _isAnswerCorrect ? Colors.green : Colors.red)),
+                decoration: BoxDecoration(
+                  color: _isAnswerCorrect ? Colors.green.shade50 : Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: _isAnswerCorrect ? Colors.green : Colors.red),
+                ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         Icon(_isAnswerCorrect ? Icons.check_circle : Icons.cancel, color: _isAnswerCorrect ? Colors.green : Colors.red),
                         const SizedBox(width: 10),
-                        Text(_isAnswerCorrect ? "Jawaban Anda Tepat!" : "Ups, Jawaban Kurang Tepat!", style: TextStyle(fontWeight: FontWeight.bold, color: _isAnswerCorrect ? Colors.green : Colors.red)),
+                        Expanded(
+                          child: Text(
+                            _isAnswerCorrect ? "Jawaban Anda Tepat!" : "Ups, Jawaban Kurang Tepat!",
+                            style: TextStyle(fontWeight: FontWeight.bold, color: _isAnswerCorrect ? Colors.green : Colors.red),
+                          ),
+                        ),
                       ],
                     ),
                     const Divider(),
@@ -187,13 +213,8 @@ class _SimulationPageState extends State<SimulationPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A11CB), padding: const EdgeInsets.symmetric(vertical: 15)),
-                onPressed: _nextCase,
-                child: Text(_currentIndex < _cases.length - 1 ? "LANJUT KASUS BERIKUTNYA" : "SELESAIKAN SIMULASI", style: const TextStyle(color: Colors.white)),
-              )
-            ]
+            ],
+            const SizedBox(height: 10),
           ],
         ),
       ),

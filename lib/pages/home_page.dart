@@ -862,7 +862,7 @@ class _HomePageState extends State<HomePage> {
                         crossAxisCount: 2,
                         mainAxisSpacing: 15,
                         crossAxisSpacing: 15,
-                        childAspectRatio: 1.4,
+                        mainAxisExtent: 185,
                       ),
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
@@ -905,44 +905,69 @@ class _HomePageState extends State<HomePage> {
                               ),
                               child: Stack(
                                 children: [
-                                  Positioned(
-                                    right: -5,
-                                    bottom: -10,
-                                    child: Text(
-                                      '${index + 1}',
-                                      style: TextStyle(
-                                        fontSize: 60,
-                                        color: Colors.white.withOpacity(0.2),
-                                        fontWeight: FontWeight.bold,
+                                  Positioned.fill(
+                                    child: Padding(
+                                      padding:
+                                          const EdgeInsets.only(top: 25),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              item.title,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                              maxLines: 5,
+                                              overflow:
+                                                  TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Text(
+                                            isQuizOnly
+                                                ? 'Tantangan Kuis'
+                                                : 'Materi & Kuis',
+                                            style: TextStyle(
+                                              color: Colors.white
+                                                  .withOpacity(0.9),
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        item.title,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Container(
+                                      width: 26,
+                                      height: 26,
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
                                       ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        isQuizOnly
-                                            ? 'Tantangan Kuis'
-                                            : 'Materi & Kuis',
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.9),
-                                          fontSize: 10,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: isQuizOnly
+                                                ? Colors.orange.shade700
+                                                : Colors.indigo.shade400,
+                                          ),
                                         ),
                                       ),
-                                    ],
+                                    ),
                                   ),
                                 ],
                               ),
