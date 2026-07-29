@@ -881,6 +881,7 @@ class _HomePageState extends State<HomePage> {
                           );
 
                           final bool isQuizOnly = item.content.trim().isEmpty;
+                          final bool isOddNumber = (index + 1) % 2 != 0; // nomor ganjil = orange
 
                           return InkWell(
                             borderRadius: BorderRadius.circular(20),
@@ -898,7 +899,7 @@ class _HomePageState extends State<HomePage> {
                             child: Container(
                               padding: const EdgeInsets.all(15),
                               decoration: BoxDecoration(
-                                color: isQuizOnly
+                                color: isOddNumber
                                     ? Colors.orange.shade400
                                     : Colors.indigo.shade300,
                                 borderRadius: BorderRadius.circular(20),
@@ -961,7 +962,7 @@ class _HomePageState extends State<HomePage> {
                                           style: TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.bold,
-                                            color: isQuizOnly
+                                            color: isOddNumber
                                                 ? Colors.orange.shade700
                                                 : Colors.indigo.shade400,
                                           ),
@@ -1102,29 +1103,57 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              Container(
-                margin: const EdgeInsets.only(top: 8),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.stars, color: Colors.amber, size: 18),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$points',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LeaderboardPage(),
                     ),
-                  ],
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.stars, color: Colors.amber, size: 24),
+                      const SizedBox(width: 6),
+                      Text(
+                        '$points',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.white.withOpacity(0.7),
+                        size: 14,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
