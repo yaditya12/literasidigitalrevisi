@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../data/materi.dart';
+import '../services/quiz_attempt_service.dart';
 
 class ResultPage extends StatefulWidget {
   final int score;
@@ -57,35 +58,61 @@ class _ResultPageState extends State<ResultPage> {
 
     try {
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      final String quizId = widget.materi?.id ?? widget.materi?.title.trim() ?? 'kuis';
+      final String quizTitle = widget.materi?.title.trim().isNotEmpty == true
+          ? widget.materi!.title.trim()
+          : 'Kuis';
       final DocumentReference<Map<String, dynamic>> userRef =
           firestore.collection('users').doc(user.uid);
-
+      final DocumentReference<Map<String, dynamic>> attemptRef = userRef
+          .collection('quiz_attempts')
+          .doc(quizId);
       final CollectionReference<Map<String, dynamic>> historyRef =
           userRef.collection('history');
+
+      final existingAttempt = await attemptRef.get();
+      final int attemptsUsed = (existingAttempt.data()?['attemptsUsed'] ?? 0) as int;
+      final int currentBest = (existingAttempt.data()?['bestScore'] ?? 0) as int;
+
+      final int newBest = selectBestScore(
+        currentBest: currentBest,
+        newScore: earnedPoints,
+      );
+      final int addedPoints = pointsDeltaForAttempt(
+        currentBest: currentBest,
+        newScore: earnedPoints,
+      );
 
       final WriteBatch batch = firestore.batch();
 
       batch.set(
         userRef,
         {
-          'points': FieldValue.increment(earnedPoints),
+          'points': FieldValue.increment(addedPoints),
           'lastQuizAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         },
         SetOptions(merge: true),
       );
 
+      batch.set(attemptRef, {
+        'quizId': quizId,
+        'quizTitle': quizTitle,
+        'attemptsUsed': attemptsUsed + 1,
+        'bestScore': newBest,
+        'lastScore': earnedPoints,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
       batch.set(historyRef.doc(), {
         'userId': user.uid,
         'userEmail': user.email ?? '',
-        'quizId': widget.materi?.id ?? '',
-        'quizTitle': widget.materi?.title.trim().isNotEmpty == true
-            ? widget.materi!.title.trim()
-            : 'Kuis',
+        'quizId': quizId,
+        'quizTitle': quizTitle,
         'score': earnedPoints,
         'correctAnswers': widget.score,
         'totalQuestions': widget.total,
-        'pointsEarned': earnedPoints,
+        'pointsEarned': addedPoints,
         'timestamp': FieldValue.serverTimestamp(),
       });
 

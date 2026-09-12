@@ -98,6 +98,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
 
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
+  late final TextEditingController _sourceLinkController;
 
   String _selectedCategory = 'Keamanan Digital';
   List<Map<String, dynamic>> tempQuiz = [];
@@ -111,6 +112,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
     if (widget.materi != null) {
       _titleController = TextEditingController(text: widget.materi!.title);
       _contentController = TextEditingController(text: widget.materi!.content);
+      _sourceLinkController = TextEditingController(text: widget.materi!.sourceLink ?? '');
       tempQuiz = widget.materi!.quiz.map((questionData) {
         final options = _safeOptions(questionData['options']);
         final answer = _safeAnswer(questionData['answer']);
@@ -128,6 +130,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
     } else {
       _titleController = TextEditingController();
       _contentController = TextEditingController();
+      _sourceLinkController = TextEditingController();
       tempQuiz = [];
     }
   }
@@ -136,6 +139,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _sourceLinkController.dispose();
     super.dispose();
   }
 
@@ -385,11 +389,14 @@ class _AddMateriPageState extends State<AddMateriPage> {
     setState(() => _isLoading = true);
 
     try {
+      final String sourceLink = _sourceLinkController.text.trim();
+
       final Map<String, dynamic> dataToSave = {
         'title': title,
         'category': _selectedCategory,
         'literacyScope': 'digital_literacy',
         'content': widget.isQuizOnly ? '' : content,
+        'sourceLink': sourceLink,
         'quiz': validatedQuiz,
         'updatedAt': FieldValue.serverTimestamp(),
       };

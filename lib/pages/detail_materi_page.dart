@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../data/materi.dart';
 import 'quiz_page.dart';
 
@@ -27,6 +29,30 @@ class DetailMateriPage extends StatelessWidget {
                   _buildReadingMeta(),
                   
                   const SizedBox(height: 25),
+
+                  if (materi.sourceLink != null && materi.sourceLink!.trim().isNotEmpty) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final uri = Uri.tryParse(materi.sourceLink!.trim());
+                          if (uri != null && await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        },
+                        icon: const Icon(Icons.attach_file_rounded),
+                        label: const Text('Buka File Materi'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6A11CB),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
 
                   // Isi Materi dengan Typography yang nyaman
                   Text(

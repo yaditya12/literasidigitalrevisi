@@ -878,6 +878,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             content: _stringValue(data, 'content', ''),
                             quiz: _parseQuiz(data['quiz']),
+                            sourceLink: _stringValue(data, 'sourceLink', ''),
                           );
 
                           final bool isQuizOnly = item.content.trim().isEmpty;

@@ -4,12 +4,14 @@ class MateriModel {
   final String title;
   final String content;
   final List<Map<String, dynamic>> quiz;
+  final String? sourceLink;
 
   MateriModel({
     this.id,
     required this.title,
     required this.content,
     required this.quiz,
+    this.sourceLink,
   });
 }
 

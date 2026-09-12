@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../data/materi.dart';
+import '../services/quiz_attempt_service.dart';
 import 'detail_materi_page.dart';
 import 'quiz_page.dart';
 
@@ -102,7 +104,31 @@ class MateriPage extends StatelessWidget {
                   desc: "Uji kemampuanmu sekarang.",
                   icon: Icons.psychology_rounded,
                   color: Colors.green.shade400,
-                  onTap: () {
+                  onTap: () async {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Silakan login terlebih dahulu.')),
+                      );
+                      return;
+                    }
+
+                    final canStart = await QuizAttemptService.canStartQuiz(
+                      userId: user.uid,
+                      quizId: materi.id ?? materi.title.trim(),
+                    );
+
+                    if (!context.mounted) return;
+                    if (!canStart) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(getQuizAttemptLimitMessage()),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => QuizPage(materi: materi)),

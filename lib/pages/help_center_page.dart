@@ -14,8 +14,8 @@ class HelpCenterPage extends StatelessWidget {
       "answer": "Di halaman beranda (Home), pilih menu 'Join Quiz' atau pilih salah satu materi di bawah. Jika kuis memerlukan kode, masukkan Kode Unik yang diberikan oleh guru Anda."
     },
     {
-      "question": "Mengapa kuis saya terkunci?",
-      "answer": "Kuis akan terkunci otomatis jika Anda sudah pernah menyelesaikannya. Anda hanya dapat mengerjakan kuis satu kali untuk menjaga keadilan nilai."
+      "question": "Apakah kuis bisa dikerjakan berulang kali?",
+      "answer": "Ya. Kuis bisa dikerjakan terus menerus untuk belajar. Yang dihitung untuk poin adalah nilai terbaik yang Anda capai pada kuis tersebut."
     },
     {
       "question": "Bagaimana perhitungan sistem Peringkat?",
