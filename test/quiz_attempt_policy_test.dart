@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_application_1/services/quiz_attempt_service.dart';
+import 'package:zonadigi/services/quiz_attempt_service.dart';
 
 void main() {
   group('Quiz attempt policy', () {
