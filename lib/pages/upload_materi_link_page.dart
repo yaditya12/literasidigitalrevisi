@@ -10,6 +10,8 @@ class UploadMateriLinkPage extends StatefulWidget {
 
 class _UploadMateriLinkPageState extends State<UploadMateriLinkPage> {
   static const Color _primaryColor = Color(0xFF6A11CB);
+  static const String _bookCoverUrl =
+      'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=500&auto=format&fit=crop';
 
   static const List<String> _digitalLiteracyCategories = [
     'Keamanan Digital',
@@ -100,23 +102,7 @@ class _UploadMateriLinkPageState extends State<UploadMateriLinkPage> {
   }
 
   String _coverUrlByType(String type) {
-    if (type.contains('PDF')) {
-      return 'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=500&auto=format&fit=crop';
-    }
-
-    if (type.contains('Presentasi')) {
-      return 'https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=500&auto=format&fit=crop';
-    }
-
-    if (type.contains('Infografis')) {
-      return 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=500&auto=format&fit=crop';
-    }
-
-    if (type.contains('Video')) {
-      return 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=500&auto=format&fit=crop';
-    }
-
-    return 'https://images.unsplash.com/photo-1456406644174-8ddd4cd52a06?q=80&w=500&auto=format&fit=crop';
+    return _bookCoverUrl;
   }
 
   void _showSnackBar(String message, {Color? color}) {
