@@ -5,6 +5,7 @@ class MateriModel {
   final String content;
   final List<Map<String, dynamic>> quiz;
   final String? sourceLink;
+  final bool isDraft;
 
   MateriModel({
     this.id,
@@ -12,6 +13,7 @@ class MateriModel {
     required this.content,
     required this.quiz,
     this.sourceLink,
+    this.isDraft = false,
   });
 }
 

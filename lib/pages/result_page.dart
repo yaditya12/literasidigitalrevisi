@@ -71,6 +71,8 @@ class _ResultPageState extends State<ResultPage> {
           userRef.collection('history');
 
       final existingAttempt = await attemptRef.get();
+      final userDoc = await userRef.get();
+      final String username = userDoc.data()?['username'] ?? user.displayName ?? 'Siswa';
       final int attemptsUsed = (existingAttempt.data()?['attemptsUsed'] ?? 0) as int;
       final int currentBest = (existingAttempt.data()?['bestScore'] ?? 0) as int;
 
@@ -98,6 +100,7 @@ class _ResultPageState extends State<ResultPage> {
       batch.set(attemptRef, {
         'quizId': quizId,
         'quizTitle': quizTitle,
+        'username': username,
         'attemptsUsed': attemptsUsed + 1,
         'bestScore': newBest,
         'lastScore': earnedPoints,
@@ -106,6 +109,7 @@ class _ResultPageState extends State<ResultPage> {
 
       batch.set(historyRef.doc(), {
         'userId': user.uid,
+        'username': username,
         'userEmail': user.email ?? '',
         'quizId': quizId,
         'quizTitle': quizTitle,

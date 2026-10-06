@@ -43,11 +43,24 @@ class _JoinQuizPageState extends State<JoinQuizPage> {
         var doc = snapshot.docs.first;
         var data = doc.data() as Map<String, dynamic>;
 
+        final bool isDraft = data['isDraft'] == true || data['status'] == 'draft';
+        if (isDraft) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              backgroundColor: Colors.orange,
+              content: Text("Kuis ini masih berstatus DRAFT dan belum dipublikasikan oleh Guru."),
+            ),
+          );
+          return;
+        }
+
         // Konversi ke Model
         MateriModel joinedMateri = MateriModel(
+          id: doc.id,
           title: data['title'] ?? "Tanpa Judul",
           content: data['content'] ?? "",
           quiz: List<Map<String, dynamic>>.from(data['quiz'] ?? []),
+          isDraft: false,
         );
 
         // Navigasi ke Materi Page

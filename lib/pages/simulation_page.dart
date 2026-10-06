@@ -116,45 +116,47 @@ class _SimulationPageState extends State<SimulationPage> {
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(title: const Text("Simulasi Kasus"), backgroundColor: const Color(0xFF6A11CB), foregroundColor: Colors.white),
       // Tombol jawaban / lanjut selalu terlihat di bawah
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-        child: !_showExplanation
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text("Menurut Anda, apakah ini aman?", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade400, padding: const EdgeInsets.symmetric(vertical: 14)),
-                          icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
-                          label: const Text("BAHAYA / HOAKS", style: TextStyle(color: Colors.white, fontSize: 13)),
-                          onPressed: () => _checkAnswer(false),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: !_showExplanation
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text("Menurut Anda, apakah ini aman?", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade400, padding: const EdgeInsets.symmetric(vertical: 14)),
+                            icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
+                            label: const Text("BAHAYA / HOAKS", style: TextStyle(color: Colors.white, fontSize: 13)),
+                            onPressed: () => _checkAnswer(false),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: const EdgeInsets.symmetric(vertical: 14)),
-                          icon: const Icon(Icons.gpp_good, color: Colors.white),
-                          label: const Text("AMAN", style: TextStyle(color: Colors.white)),
-                          onPressed: () => _checkAnswer(true),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: const EdgeInsets.symmetric(vertical: 14)),
+                            icon: const Icon(Icons.gpp_good, color: Colors.white),
+                            label: const Text("AMAN", style: TextStyle(color: Colors.white)),
+                            onPressed: () => _checkAnswer(true),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ],
+                )
+              : SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A11CB), padding: const EdgeInsets.symmetric(vertical: 15)),
+                    onPressed: _nextCase,
+                    child: Text(_currentIndex < _cases.length - 1 ? "LANJUT KASUS BERIKUTNYA" : "SELESAIKAN SIMULASI", style: const TextStyle(color: Colors.white)),
                   ),
-                ],
-              )
-            : SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A11CB), padding: const EdgeInsets.symmetric(vertical: 15)),
-                  onPressed: _nextCase,
-                  child: Text(_currentIndex < _cases.length - 1 ? "LANJUT KASUS BERIKUTNYA" : "SELESAIKAN SIMULASI", style: const TextStyle(color: Colors.white)),
                 ),
-              ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

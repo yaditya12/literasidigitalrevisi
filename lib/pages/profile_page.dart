@@ -249,7 +249,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilePage(currentUsername: username, currentEmail: email, currentPhotoUrl: photoUrl)));
                     }),
                     _buildSettingsTile(context, "Riwayat Kuis", Icons.history_edu, Colors.purple, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const QuizHistoryPage()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => QuizHistoryPage(userRole: data['role'])));
                     }),
                     _buildSettingsTile(context, "Pusat Bantuan", Icons.support_agent, Colors.green, () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpCenterPage()));

@@ -119,9 +119,46 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Opsi: ${item.title}'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  item.title,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (item.isDraft) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade100,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.amber.shade400),
+                  ),
+                  child: Text(
+                    'DRAFT',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber.shade900,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          content: Text(
+            item.isDraft
+                ? 'Materi/Kuis ini berstatus DRAFT dan belum dapat dilihat oleh siswa.'
+                : 'Materi/Kuis ini aktif dan sudah dapat diakses oleh semua siswa.',
+            style: const TextStyle(fontSize: 13, color: Colors.black87),
+          ),
           actions: [
-            TextButton(
+            TextButton.icon(
+              icon: const Icon(Icons.edit, size: 18),
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -135,9 +172,56 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
               },
-              child: const Text('Edit'),
+              label: const Text('Edit'),
             ),
-            TextButton(
+            if (item.isDraft)
+              TextButton.icon(
+                icon: const Icon(Icons.rocket_launch_rounded, size: 18, color: Color(0xFF00BFA5)),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await FirebaseFirestore.instance
+                      .collection('materi')
+                      .doc(docId)
+                      .update({
+                    'isDraft': false,
+                    'status': 'published',
+                    'updatedAt': FieldValue.serverTimestamp(),
+                  });
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Materi/Kuis berhasil dipublikasikan ke siswa!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                label: const Text('Publikasikan', style: TextStyle(color: Color(0xFF00BFA5))),
+              )
+            else
+              TextButton.icon(
+                icon: const Icon(Icons.archive_outlined, size: 18, color: Colors.orange),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await FirebaseFirestore.instance
+                      .collection('materi')
+                      .doc(docId)
+                      .update({
+                    'isDraft': true,
+                    'status': 'draft',
+                    'updatedAt': FieldValue.serverTimestamp(),
+                  });
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Materi/Kuis dikembalikan ke status Draft.'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                },
+                label: const Text('Jadikan Draft', style: TextStyle(color: Colors.orange)),
+              ),
+            TextButton.icon(
+              icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
               onPressed: () async {
                 Navigator.pop(context);
                 await FirebaseFirestore.instance
@@ -145,7 +229,7 @@ class _HomePageState extends State<HomePage> {
                     .doc(docId)
                     .delete();
               },
-              child: const Text(
+              label: const Text(
                 'Hapus',
                 style: TextStyle(color: Colors.red),
               ),
@@ -838,7 +922,16 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
 
-                  final docs = materiSnapshot.data?.docs ?? [];
+                  final rawDocs = materiSnapshot.data?.docs ?? [];
+
+                  // Guru dapat melihat semua materi (termasuk draft).
+                  // Siswa hanya melihat materi yang sudah dipublikasikan.
+                  final docs = rawDocs.where((doc) {
+                    if (isTeacher) return true;
+                    final data = doc.data();
+                    final isDraft = data['isDraft'] == true || data['status'] == 'draft';
+                    return !isDraft;
+                  }).toList();
 
                   if (docs.isEmpty) {
                     return const SliverToBoxAdapter(
@@ -868,6 +961,7 @@ class _HomePageState extends State<HomePage> {
                         (context, index) {
                           final doc = docs[index];
                           final Map<String, dynamic> data = doc.data();
+                          final bool isDraft = data['isDraft'] == true || data['status'] == 'draft';
 
                           final MateriModel item = MateriModel(
                             id: doc.id,
@@ -879,6 +973,7 @@ class _HomePageState extends State<HomePage> {
                             content: _stringValue(data, 'content', ''),
                             quiz: _parseQuiz(data['quiz']),
                             sourceLink: _stringValue(data, 'sourceLink', ''),
+                            isDraft: isDraft,
                           );
 
                           final bool isQuizOnly = item.content.trim().isEmpty;
@@ -887,12 +982,16 @@ class _HomePageState extends State<HomePage> {
                           return InkWell(
                             borderRadius: BorderRadius.circular(20),
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => MateriPage(materi: item),
-                                ),
-                              );
+                              if (item.isDraft && isTeacher) {
+                                _showOptionsDialog(doc.id, item);
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => MateriPage(materi: item),
+                                  ),
+                                );
+                              }
                             },
                             onLongPress: isTeacher
                                 ? () => _showOptionsDialog(doc.id, item)
@@ -904,9 +1003,47 @@ class _HomePageState extends State<HomePage> {
                                     ? Colors.orange.shade400
                                     : Colors.indigo.shade300,
                                 borderRadius: BorderRadius.circular(20),
+                                border: isDraft
+                                    ? Border.all(color: Colors.amber.shade200, width: 2)
+                                    : null,
                               ),
                               child: Stack(
                                 children: [
+                                  if (item.isDraft)
+                                    Positioned(
+                                      top: 0,
+                                      left: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.amber.shade400,
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.edit_note_rounded,
+                                              size: 11,
+                                              color: Colors.black87,
+                                            ),
+                                            SizedBox(width: 2),
+                                            Text(
+                                              'DRAFT',
+                                              style: TextStyle(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w900,
+                                                color: Colors.black87,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
                                   Positioned.fill(
                                     child: Padding(
                                       padding:

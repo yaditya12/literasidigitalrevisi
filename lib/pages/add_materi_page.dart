@@ -104,6 +104,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
   List<Map<String, dynamic>> tempQuiz = [];
   bool _isLoading = false;
   bool _isLoadingExistingCategory = false;
+  bool _isDraft = false;
 
   @override
   void initState() {
@@ -113,6 +114,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
       _titleController = TextEditingController(text: widget.materi!.title);
       _contentController = TextEditingController(text: widget.materi!.content);
       _sourceLinkController = TextEditingController(text: widget.materi!.sourceLink ?? '');
+      _isDraft = widget.materi!.isDraft;
       tempQuiz = widget.materi!.quiz.map((questionData) {
         final options = _safeOptions(questionData['options']);
         final answer = _safeAnswer(questionData['answer']);
@@ -154,17 +156,17 @@ class _AddMateriPageState extends State<AddMateriPage> {
 
       final data = doc.data();
       final category = data?['category']?.toString();
+      final isDraftDoc = data?['isDraft'] == true || data?['status'] == 'draft';
 
       if (!mounted) return;
 
-      if (category != null && _digitalLiteracyCategories.contains(category)) {
-        setState(() {
+      setState(() {
+        _isDraft = isDraftDoc;
+        if (category != null && _digitalLiteracyCategories.contains(category)) {
           _selectedCategory = category;
-          _isLoadingExistingCategory = false;
-        });
-      } else {
-        setState(() => _isLoadingExistingCategory = false);
-      }
+        }
+        _isLoadingExistingCategory = false;
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoadingExistingCategory = false);
@@ -347,7 +349,82 @@ class _AddMateriPageState extends State<AddMateriPage> {
     );
   }
 
-  Future<void> _saveAll() async {
+  Future<void> _saveDraft() async {
+    final title = _titleController.text.trim();
+    final content = _contentController.text.trim();
+
+    if (title.isEmpty) {
+      _showSnackBar(
+        'Beri judul terlebih dahulu untuk menyimpan sebagai Draft!',
+        color: Colors.orange,
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final String sourceLink = _sourceLinkController.text.trim();
+
+      // Untuk draft, ambil soal yang sudah diisi sebagian atau lengkap (tanpa validasi kaku)
+      final List<Map<String, dynamic>> draftQuiz = [];
+      for (var q in tempQuiz) {
+        final qText = (q['question'] ?? '').toString().trim();
+        final opts = _safeOptions(q['options']);
+        final ans = _safeAnswer(q['answer']);
+        if (qText.isNotEmpty || opts.any((o) => o.trim().isNotEmpty)) {
+          draftQuiz.add({
+            'question': qText,
+            'options': opts,
+            'answer': ans,
+          });
+        }
+      }
+
+      final Map<String, dynamic> dataToSave = {
+        'title': title,
+        'category': _selectedCategory,
+        'literacyScope': 'digital_literacy',
+        'content': widget.isQuizOnly ? '' : content,
+        'sourceLink': sourceLink,
+        'quiz': draftQuiz,
+        'isDraft': true,
+        'status': 'draft',
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (widget.docId != null) {
+        await FirebaseFirestore.instance
+            .collection('materi')
+            .doc(widget.docId)
+            .update(dataToSave);
+
+        if (!mounted) return;
+        _showSnackBar('Draft berhasil diperbarui!', color: Colors.green);
+        Navigator.pop(context, true);
+      } else {
+        final newCode = _generateJoinCode();
+        dataToSave['joinCode'] = newCode;
+        dataToSave['createdAt'] = FieldValue.serverTimestamp();
+
+        await FirebaseFirestore.instance.collection('materi').add(dataToSave);
+
+        if (!mounted) return;
+        _showSnackBar(
+          'Draft berhasil disimpan! Anda dapat mengedit dan melengkapinya kapan saja.',
+          color: Colors.green,
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showSnackBar('Gagal menyimpan draft: $e', color: Colors.red);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _publish() async {
     final title = _titleController.text.trim();
     final content = _contentController.text.trim();
 
@@ -362,7 +439,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
     }
 
     if (tempQuiz.isEmpty) {
-      _showSnackBar('Minimal buat 1 pertanyaan kuis!');
+      _showSnackBar('Minimal buat 1 pertanyaan kuis untuk publikasi!');
       return;
     }
 
@@ -398,6 +475,8 @@ class _AddMateriPageState extends State<AddMateriPage> {
         'content': widget.isQuizOnly ? '' : content,
         'sourceLink': sourceLink,
         'quiz': validatedQuiz,
+        'isDraft': false,
+        'status': 'published',
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
@@ -408,6 +487,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
             .update(dataToSave);
 
         if (!mounted) return;
+        _showSnackBar('Materi/kuis berhasil dipublikasikan ke siswa!', color: Colors.green);
         Navigator.pop(context, true);
       } else {
         final newCode = _generateJoinCode();
@@ -422,7 +502,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      _showSnackBar('Gagal menyimpan: $e', color: Colors.red);
+      _showSnackBar('Gagal mempublikasikan: $e', color: Colors.red);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -431,12 +511,10 @@ class _AddMateriPageState extends State<AddMateriPage> {
   @override
   Widget build(BuildContext context) {
     final pageTitle = widget.docId != null
-        ? 'Edit Materi'
+        ? (_isDraft ? 'Edit Draft Materi' : 'Edit Materi')
         : widget.isQuizOnly
             ? 'Buat Kuis Baru'
             : 'Buat Materi Baru';
-
-    final buttonText = widget.docId != null ? 'UPDATE MATERI' : 'SIMPAN MATERI';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
@@ -458,6 +536,34 @@ class _AddMateriPageState extends State<AddMateriPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_isDraft) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.shade300),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_note_rounded, color: Colors.amber.shade800, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Status: DRAFT — Materi/Kuis ini belum dapat dilihat oleh siswa. Anda bisa mengedit dan melengkapinya kembali kapan saja.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.amber.shade900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
             _buildDigitalLockInfo(),
             const SizedBox(height: 20),
             _buildSectionHeader(Icons.title, 'Judul'),
@@ -526,32 +632,72 @@ class _AddMateriPageState extends State<AddMateriPage> {
             ...tempQuiz.asMap().entries.map((entry) {
               return _buildQuestionCard(entry.key);
             }),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _saveAll,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _buttonColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 2,
+            const SizedBox(height: 35),
+
+            // Tombol Simpan Draft & Publikasikan
+            if (_isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  child: CircularProgressIndicator(),
                 ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text(
-                        buttonText,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.1,
+              )
+            else
+              Row(
+                children: [
+                  // Tombol Simpan Draft
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: OutlinedButton.icon(
+                        onPressed: _saveDraft,
+                        icon: const Icon(Icons.bookmark_add_outlined, color: _primaryColor, size: 20),
+                        label: const Text(
+                          'SIMPAN DRAFT',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: _primaryColor,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: _primaryColor, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          backgroundColor: Colors.white,
                         ),
                       ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Tombol Publikasikan
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: _publish,
+                        icon: const Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 18),
+                        label: Text(
+                          widget.docId != null && !_isDraft ? 'UPDATE' : 'PUBLIKASIKAN',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _buttonColor,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
             const SizedBox(height: 20),
           ],
         ),
