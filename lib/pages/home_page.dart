@@ -178,6 +178,18 @@ class _HomePageState extends State<HomePage> {
               TextButton.icon(
                 icon: const Icon(Icons.rocket_launch_rounded, size: 18, color: Color(0xFF00BFA5)),
                 onPressed: () async {
+                  if (item.quiz.length < 5) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Kuis belum memenuhi syarat minimal 5 soal (saat ini baru ${item.quiz.length} soal). Silakan Edit kuis terlebih dahulu.',
+                        ),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                    return;
+                  }
                   Navigator.pop(context);
                   await FirebaseFirestore.instance
                       .collection('materi')

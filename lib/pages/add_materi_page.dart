@@ -438,8 +438,11 @@ class _AddMateriPageState extends State<AddMateriPage> {
       return;
     }
 
-    if (tempQuiz.isEmpty) {
-      _showSnackBar('Minimal buat 1 pertanyaan kuis untuk publikasi!');
+    if (tempQuiz.length < 5) {
+      _showSnackBar(
+        'Kuis wajib memiliki minimal 5 soal untuk dipublikasikan! (Saat ini: ${tempQuiz.length} soal)',
+        color: Colors.orange,
+      );
       return;
     }
 
@@ -597,13 +600,68 @@ class _AddMateriPageState extends State<AddMateriPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildSectionHeader(Icons.quiz_rounded, 'Pertanyaan Kuis'),
-                TextButton.icon(
-                  onPressed: _addQuestion,
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Tambah'),
-                  style: TextButton.styleFrom(foregroundColor: _primaryColor),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: tempQuiz.length >= 5
+                            ? Colors.green.shade50
+                            : Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: tempQuiz.length >= 5
+                              ? Colors.green.shade300
+                              : Colors.orange.shade300,
+                        ),
+                      ),
+                      child: Text(
+                        '${tempQuiz.length}/5 Soal',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: tempQuiz.length >= 5
+                              ? Colors.green.shade800
+                              : Colors.orange.shade900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    TextButton.icon(
+                      onPressed: _addQuestion,
+                      icon: const Icon(Icons.add_circle_outline),
+                      label: const Text('Tambah'),
+                      style: TextButton.styleFrom(foregroundColor: _primaryColor),
+                    ),
+                  ],
                 ),
               ],
+            ),
+            Container(
+              margin: const EdgeInsets.only(top: 4, bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.amber.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: Colors.amber.shade900),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Batas minimal kuis adalah 5 soal untuk dapat dipublikasikan ke siswa.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.amber.shade900,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             if (tempQuiz.isEmpty)
               Center(
@@ -618,7 +676,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Belum ada kuis.\nKlik tambah untuk membuat.',
+                        'Belum ada kuis.\nKlik tambah untuk membuat (minimal 5 soal).',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.grey.shade500,
