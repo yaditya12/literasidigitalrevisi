@@ -324,6 +324,9 @@ class _HomePageState extends State<HomePage> {
         ? coverUrl.trim()
         : _defaultCoverUrl;
     final bool isDraftMateri = materiData?['isDraft'] == true || materiData?['status'] == 'draft';
+    final Color primaryColor = userRole == 'teacher'
+        ? const Color(0xFF00BFA5)
+        : const Color(0xFF6A11CB);
 
     showDialog(
       context: context,
