@@ -318,10 +318,12 @@ class _HomePageState extends State<HomePage> {
     required String userRole,
     required String coverUrl,
     required String link,
+    Map<String, dynamic>? materiData,
   }) {
     final String imageUrl = coverUrl.trim().isNotEmpty
         ? coverUrl.trim()
         : _defaultCoverUrl;
+    final bool isDraftMateri = materiData?['isDraft'] == true || materiData?['status'] == 'draft';
 
     showDialog(
       context: context,
@@ -361,6 +363,32 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
+                    if (isDraftMateri && userRole == 'teacher') ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.amber.shade300),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.edit_note, size: 16, color: Colors.amber.shade800),
+                            const SizedBox(width: 4),
+                            Text(
+                              'DRAFT',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber.shade800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     Text(
                       title,
                       textAlign: TextAlign.center,
@@ -391,7 +419,9 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 15),
                     Text(
                       userRole == 'teacher'
-                          ? 'Anda dapat membuka atau menghapus materi ini.'
+                          ? (isDraftMateri
+                              ? 'Draft ini belum terlihat oleh siswa. Edit atau publikasikan.'
+                              : 'Anda dapat membuka atau menghapus materi ini.')
                           : 'Materi ini akan dibuka di browser/aplikasi Anda.',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
@@ -400,9 +430,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(height: 25),
-                    Row(
-                      children: [
-                        if (userRole == 'teacher') ...[
+                    if (userRole == 'teacher') ...[
+                      Row(
+                        children: [
                           Expanded(
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
@@ -430,7 +460,47 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                side: BorderSide(
+                                  color: primaryColor,
+                                ),
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => UploadMateriLinkPage(
+                                      docId: docId,
+                                      existingData: materiData,
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: Icon(Icons.edit, size: 16, color: primaryColor),
+                              label: Text(
+                                'Edit',
+                                style: TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    Row(
+                      children: [
                         if (userRole != 'teacher') ...[
                           Expanded(
                             child: OutlinedButton(
@@ -716,7 +786,16 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
 
-                  final docs = snapshot.data?.docs ?? [];
+                  final allDocs = snapshot.data?.docs ?? [];
+
+                  // Filter: siswa tidak melihat draft
+                  final docs = isTeacher
+                      ? allDocs
+                      : allDocs.where((doc) {
+                          final data = doc.data();
+                          final isDraft = data['isDraft'] == true || data['status'] == 'draft';
+                          return !isDraft;
+                        }).toList();
 
                   if (docs.isEmpty && !isTeacher) {
                     return const SliverToBoxAdapter(
@@ -800,6 +879,7 @@ class _HomePageState extends State<HomePage> {
                           final String cover =
                               _stringValue(materi, 'cover', _defaultCoverUrl);
                           final String link = _stringValue(materi, 'link', '');
+                          final bool isDraftItem = materi['isDraft'] == true || materi['status'] == 'draft';
 
                           return GestureDetector(
                             onTap: () {
@@ -810,6 +890,7 @@ class _HomePageState extends State<HomePage> {
                                 userRole: userRole,
                                 coverUrl: cover,
                                 link: link,
+                                materiData: materi,
                               );
                             },
                             child: Container(
@@ -888,6 +969,24 @@ class _HomePageState extends State<HomePage> {
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
+                                  if (isTeacher && isDraftItem) ...[
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.amber.shade100,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        'DRAFT',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.amber.shade800,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),
