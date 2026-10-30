@@ -54,6 +54,10 @@ class _JoinQuizPageState extends State<JoinQuizPage> {
           return;
         }
 
+        final bool isQuizOnly = data.containsKey('isQuizOnly')
+            ? data['isQuizOnly'] == true
+            : (data['content'] == null || data['content'].toString().trim().isEmpty);
+
         // Konversi ke Model
         MateriModel joinedMateri = MateriModel(
           id: doc.id,
@@ -61,6 +65,7 @@ class _JoinQuizPageState extends State<JoinQuizPage> {
           content: data['content'] ?? "",
           quiz: List<Map<String, dynamic>>.from(data['quiz'] ?? []),
           isDraft: false,
+          isQuizOnly: isQuizOnly,
         );
 
         // Navigasi ke Materi Page

@@ -14,7 +14,7 @@ class MateriPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // --- LOGIKA CEK TIPE ---
     // Jika content kosong, berarti ini adalah MODE KUIS SAJA (Tantangan)
-    bool isQuizOnly = materi.content.trim().isEmpty;
+    bool isQuizOnly = materi.isQuizOnly || materi.content.trim().isEmpty;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE), 

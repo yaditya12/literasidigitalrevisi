@@ -102,18 +102,23 @@ class _AddMateriPageState extends State<AddMateriPage> {
 
   String _selectedCategory = 'Keamanan Digital';
   List<Map<String, dynamic>> tempQuiz = [];
+  final List<TextEditingController> _questionControllers = [];
+  final List<List<TextEditingController>> _optionControllers = [];
   bool _isLoading = false;
-  bool _isLoadingExistingCategory = false;
+  bool _isLoadingExistingDoc = false;
   bool _isDraft = false;
+  late bool _isQuizOnly;
 
   @override
   void initState() {
     super.initState();
+    _isQuizOnly = widget.materi?.isQuizOnly ?? widget.isQuizOnly;
 
     if (widget.materi != null) {
       _titleController = TextEditingController(text: widget.materi!.title);
       _contentController = TextEditingController(text: widget.materi!.content);
-      _sourceLinkController = TextEditingController(text: widget.materi!.sourceLink ?? '');
+      _sourceLinkController =
+          TextEditingController(text: widget.materi!.sourceLink ?? '');
       _isDraft = widget.materi!.isDraft;
       tempQuiz = widget.materi!.quiz.map((questionData) {
         final options = _safeOptions(questionData['options']);
@@ -126,14 +131,28 @@ class _AddMateriPageState extends State<AddMateriPage> {
         };
       }).toList();
 
+      for (final q in tempQuiz) {
+        _questionControllers.add(
+          TextEditingController(text: (q['question'] ?? '').toString()),
+        );
+        final opts = _safeOptions(q['options']);
+        _optionControllers.add(
+          opts.map((o) => TextEditingController(text: o)).toList(),
+        );
+      }
+
       if (widget.docId != null) {
-        _loadExistingCategory();
+        _loadExistingDoc();
       }
     } else {
       _titleController = TextEditingController();
       _contentController = TextEditingController();
       _sourceLinkController = TextEditingController();
       tempQuiz = [];
+
+      if (widget.docId != null) {
+        _loadExistingDoc();
+      }
     }
   }
 
@@ -142,11 +161,19 @@ class _AddMateriPageState extends State<AddMateriPage> {
     _titleController.dispose();
     _contentController.dispose();
     _sourceLinkController.dispose();
+    for (final c in _questionControllers) {
+      c.dispose();
+    }
+    for (final row in _optionControllers) {
+      for (final c in row) {
+        c.dispose();
+      }
+    }
     super.dispose();
   }
 
-  Future<void> _loadExistingCategory() async {
-    setState(() => _isLoadingExistingCategory = true);
+  Future<void> _loadExistingDoc() async {
+    setState(() => _isLoadingExistingDoc = true);
 
     try {
       final doc = await FirebaseFirestore.instance
@@ -155,21 +182,71 @@ class _AddMateriPageState extends State<AddMateriPage> {
           .get();
 
       final data = doc.data();
-      final category = data?['category']?.toString();
-      final isDraftDoc = data?['isDraft'] == true || data?['status'] == 'draft';
+      if (data == null) {
+        if (mounted) setState(() => _isLoadingExistingDoc = false);
+        return;
+      }
+
+      final category = data['category']?.toString();
+      final isDraftDoc = data['isDraft'] == true || data['status'] == 'draft';
+      final bool? isQuizOnlyDoc =
+          data.containsKey('isQuizOnly') ? (data['isQuizOnly'] == true) : null;
 
       if (!mounted) return;
 
       setState(() {
         _isDraft = isDraftDoc;
+        if (isQuizOnlyDoc != null) {
+          _isQuizOnly = isQuizOnlyDoc;
+        }
         if (category != null && _digitalLiteracyCategories.contains(category)) {
           _selectedCategory = category;
         }
-        _isLoadingExistingCategory = false;
+
+        // If widget.materi was null, populate from Firestore data
+        if (widget.materi == null) {
+          _titleController.text = data['title']?.toString() ?? '';
+          _contentController.text = data['content']?.toString() ?? '';
+          _sourceLinkController.text = data['sourceLink']?.toString() ?? '';
+
+          final rawQuiz = data['quiz'];
+          if (rawQuiz is List) {
+            tempQuiz.clear();
+            for (final c in _questionControllers) {
+              c.dispose();
+            }
+            _questionControllers.clear();
+            for (final row in _optionControllers) {
+              for (final c in row) {
+                c.dispose();
+              }
+            }
+            _optionControllers.clear();
+
+            for (final item in rawQuiz) {
+              if (item is Map) {
+                final qMap = Map<String, dynamic>.from(item);
+                final options = _safeOptions(qMap['options']);
+                final answer = _safeAnswer(qMap['answer']);
+                final qText = (qMap['question'] ?? '').toString();
+                tempQuiz.add({
+                  'question': qText,
+                  'options': options,
+                  'answer': answer,
+                });
+                _questionControllers.add(TextEditingController(text: qText));
+                _optionControllers.add(
+                  options.map((o) => TextEditingController(text: o)).toList(),
+                );
+              }
+            }
+          }
+        }
+        _isLoadingExistingDoc = false;
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _isLoadingExistingCategory = false);
+      setState(() => _isLoadingExistingDoc = false);
     }
   }
 
@@ -194,16 +271,27 @@ class _AddMateriPageState extends State<AddMateriPage> {
     return 0;
   }
 
-  List<String> _ensureOptions(int index) {
-    final options = _safeOptions(tempQuiz[index]['options']);
-    tempQuiz[index]['options'] = options;
-    return options;
-  }
-
   int _answerIndex(int index) {
     final answer = _safeAnswer(tempQuiz[index]['answer']);
     tempQuiz[index]['answer'] = answer;
     return answer;
+  }
+
+  void _ensureControllersForIndex(int index) {
+    while (_questionControllers.length <= index) {
+      final qText = index < tempQuiz.length
+          ? (tempQuiz[index]['question'] ?? '').toString()
+          : '';
+      _questionControllers.add(TextEditingController(text: qText));
+    }
+    while (_optionControllers.length <= index) {
+      final List<String> opts = index < tempQuiz.length
+          ? _safeOptions(tempQuiz[index]['options'])
+          : ['', '', '', ''];
+      _optionControllers.add(
+        opts.map((o) => TextEditingController(text: o)).toList(),
+      );
+    }
   }
 
   void _addQuestion() {
@@ -213,12 +301,26 @@ class _AddMateriPageState extends State<AddMateriPage> {
         'options': ['', '', '', ''],
         'answer': 0,
       });
+      _questionControllers.add(TextEditingController());
+      _optionControllers.add(
+        List.generate(4, (_) => TextEditingController()),
+      );
     });
   }
 
   void _removeQuestion(int index) {
     setState(() {
       tempQuiz.removeAt(index);
+      if (index < _questionControllers.length) {
+        _questionControllers[index].dispose();
+        _questionControllers.removeAt(index);
+      }
+      if (index < _optionControllers.length) {
+        for (final c in _optionControllers[index]) {
+          c.dispose();
+        }
+        _optionControllers.removeAt(index);
+      }
     });
   }
 
@@ -251,7 +353,20 @@ class _AddMateriPageState extends State<AddMateriPage> {
     );
   }
 
+  void _syncControllersToTempQuiz() {
+    for (int i = 0; i < tempQuiz.length; i++) {
+      if (i < _questionControllers.length) {
+        tempQuiz[i]['question'] = _questionControllers[i].text;
+      }
+      if (i < _optionControllers.length) {
+        tempQuiz[i]['options'] =
+            _optionControllers[i].map((c) => c.text).toList();
+      }
+    }
+  }
+
   List<Map<String, dynamic>>? _validateAndBuildQuiz() {
+    _syncControllersToTempQuiz();
     final List<Map<String, dynamic>> validatedQuiz = [];
 
     for (int i = 0; i < tempQuiz.length; i++) {
@@ -366,26 +481,27 @@ class _AddMateriPageState extends State<AddMateriPage> {
     try {
       final String sourceLink = _sourceLinkController.text.trim();
 
-      // Untuk draft, ambil soal yang sudah diisi sebagian atau lengkap (tanpa validasi kaku)
+      // Sinkronkan nilai controller ke tempQuiz sebelum simpan draft
+      _syncControllersToTempQuiz();
+      // Untuk draft, simpan seluruh soal tempQuiz agar pekerjaan guru tersimpan utuh
       final List<Map<String, dynamic>> draftQuiz = [];
       for (var q in tempQuiz) {
-        final qText = (q['question'] ?? '').toString().trim();
+        final qText = (q['question'] ?? '').toString();
         final opts = _safeOptions(q['options']);
         final ans = _safeAnswer(q['answer']);
-        if (qText.isNotEmpty || opts.any((o) => o.trim().isNotEmpty)) {
-          draftQuiz.add({
-            'question': qText,
-            'options': opts,
-            'answer': ans,
-          });
-        }
+        draftQuiz.add({
+          'question': qText,
+          'options': opts,
+          'answer': ans,
+        });
       }
 
       final Map<String, dynamic> dataToSave = {
         'title': title,
         'category': _selectedCategory,
         'literacyScope': 'digital_literacy',
-        'content': widget.isQuizOnly ? '' : content,
+        'isQuizOnly': _isQuizOnly,
+        'content': _isQuizOnly ? '' : content,
         'sourceLink': sourceLink,
         'quiz': draftQuiz,
         'isDraft': true,
@@ -433,7 +549,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
       return;
     }
 
-    if (!widget.isQuizOnly && content.isEmpty) {
+    if (!_isQuizOnly && content.isEmpty) {
       _showSnackBar('Isi materi wajib diisi!');
       return;
     }
@@ -451,7 +567,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
 
     final textToCheck = [
       title,
-      if (!widget.isQuizOnly) content,
+      if (!_isQuizOnly) content,
       ...validatedQuiz.map((quiz) => quiz['question'].toString()),
       ...validatedQuiz.expand(
         (quiz) => List<String>.from(quiz['options'] as List),
@@ -475,7 +591,8 @@ class _AddMateriPageState extends State<AddMateriPage> {
         'title': title,
         'category': _selectedCategory,
         'literacyScope': 'digital_literacy',
-        'content': widget.isQuizOnly ? '' : content,
+        'isQuizOnly': _isQuizOnly,
+        'content': _isQuizOnly ? '' : content,
         'sourceLink': sourceLink,
         'quiz': validatedQuiz,
         'isDraft': false,
@@ -490,7 +607,9 @@ class _AddMateriPageState extends State<AddMateriPage> {
             .update(dataToSave);
 
         if (!mounted) return;
-        _showSnackBar('Materi/kuis berhasil dipublikasikan ke siswa!', color: Colors.green);
+        _showSnackBar(
+            'Materi/kuis berhasil dipublikasikan ke siswa!',
+            color: Colors.green);
         Navigator.pop(context, true);
       } else {
         final newCode = _generateJoinCode();
@@ -514,10 +633,10 @@ class _AddMateriPageState extends State<AddMateriPage> {
   @override
   Widget build(BuildContext context) {
     final pageTitle = widget.docId != null
-        ? (_isDraft ? 'Edit Draft Materi' : 'Edit Materi')
-        : widget.isQuizOnly
-            ? 'Buat Kuis Baru'
-            : 'Buat Materi Baru';
+        ? (_isDraft
+            ? (_isQuizOnly ? 'Edit Draft Kuis' : 'Edit Draft Materi')
+            : (_isQuizOnly ? 'Edit Kuis' : 'Edit Materi'))
+        : (_isQuizOnly ? 'Buat Kuis Baru' : 'Buat Materi Baru');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
@@ -542,7 +661,8 @@ class _AddMateriPageState extends State<AddMateriPage> {
             if (_isDraft) ...[
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.amber.shade50,
                   borderRadius: BorderRadius.circular(12),
@@ -550,11 +670,12 @@ class _AddMateriPageState extends State<AddMateriPage> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.edit_note_rounded, color: Colors.amber.shade800, size: 22),
+                    Icon(Icons.edit_note_rounded,
+                        color: Colors.amber.shade800, size: 22),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Status: DRAFT — Materi/Kuis ini belum dapat dilihat oleh siswa. Anda bisa mengedit dan melengkapinya kembali kapan saja.',
+                        'Status: DRAFT — ${_isQuizOnly ? 'Kuis' : 'Materi & Kuis'} ini belum dapat dilihat oleh siswa. Anda dapat mengedit isi materi dan soal kuis kapan saja.',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -567,6 +688,11 @@ class _AddMateriPageState extends State<AddMateriPage> {
               ),
               const SizedBox(height: 14),
             ],
+
+            // Content Type Selector: Materi & Kuis vs Kuis Saja
+            _buildContentTypeSelector(),
+            const SizedBox(height: 14),
+
             _buildDigitalLockInfo(),
             const SizedBox(height: 20),
             _buildSectionHeader(Icons.title, 'Judul'),
@@ -578,11 +704,12 @@ class _AddMateriPageState extends State<AddMateriPage> {
               icon: Icons.title,
             ),
             const SizedBox(height: 20),
-            _buildSectionHeader(Icons.category_rounded, 'Kategori Literasi Digital'),
+            _buildSectionHeader(
+                Icons.category_rounded, 'Kategori Literasi Digital'),
             const SizedBox(height: 10),
             _buildCategoryDropdown(),
             const SizedBox(height: 20),
-            if (!widget.isQuizOnly) ...[
+            if (!_isQuizOnly) ...[
               _buildSectionHeader(Icons.book_rounded, 'Isi Materi'),
               const SizedBox(height: 10),
               _buildTextField(
@@ -604,7 +731,8 @@ class _AddMateriPageState extends State<AddMateriPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 4),
                       decoration: BoxDecoration(
                         color: tempQuiz.length >= 5
                             ? Colors.green.shade50
@@ -632,7 +760,8 @@ class _AddMateriPageState extends State<AddMateriPage> {
                       onPressed: _addQuestion,
                       icon: const Icon(Icons.add_circle_outline),
                       label: const Text('Tambah'),
-                      style: TextButton.styleFrom(foregroundColor: _primaryColor),
+                      style:
+                          TextButton.styleFrom(foregroundColor: _primaryColor),
                     ),
                   ],
                 ),
@@ -648,7 +777,8 @@ class _AddMateriPageState extends State<AddMateriPage> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.amber.shade900),
+                  Icon(Icons.info_outline,
+                      size: 16, color: Colors.amber.shade900),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -709,7 +839,8 @@ class _AddMateriPageState extends State<AddMateriPage> {
                       height: 52,
                       child: OutlinedButton.icon(
                         onPressed: _saveDraft,
-                        icon: const Icon(Icons.bookmark_add_outlined, color: _primaryColor, size: 20),
+                        icon: const Icon(Icons.bookmark_add_outlined,
+                            color: _primaryColor, size: 20),
                         label: const Text(
                           'SIMPAN DRAFT',
                           style: TextStyle(
@@ -719,7 +850,8 @@ class _AddMateriPageState extends State<AddMateriPage> {
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: _primaryColor, width: 1.5),
+                          side:
+                              const BorderSide(color: _primaryColor, width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -735,9 +867,12 @@ class _AddMateriPageState extends State<AddMateriPage> {
                       height: 52,
                       child: ElevatedButton.icon(
                         onPressed: _publish,
-                        icon: const Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 18),
+                        icon: const Icon(Icons.rocket_launch_rounded,
+                            color: Colors.white, size: 18),
                         label: Text(
-                          widget.docId != null && !_isDraft ? 'UPDATE' : 'PUBLIKASIKAN',
+                          widget.docId != null && !_isDraft
+                              ? 'UPDATE'
+                              : 'PUBLIKASIKAN',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -759,6 +894,105 @@ class _AddMateriPageState extends State<AddMateriPage> {
             const SizedBox(height: 20),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildContentTypeSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(6),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                if (_isQuizOnly) {
+                  setState(() => _isQuizOnly = false);
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: !_isQuizOnly ? _primaryColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.menu_book_rounded,
+                      size: 18,
+                      color: !_isQuizOnly ? Colors.white : Colors.grey.shade700,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Materi & Kuis',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            !_isQuizOnly ? Colors.white : Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                if (!_isQuizOnly) {
+                  setState(() => _isQuizOnly = true);
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color:
+                      _isQuizOnly ? Colors.orange.shade700 : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.psychology_alt,
+                      size: 18,
+                      color: _isQuizOnly ? Colors.white : Colors.grey.shade700,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Kuis Saja',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            _isQuizOnly ? Colors.white : Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -811,7 +1045,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
         isExpanded: true,
         decoration: InputDecoration(
           labelText: 'Pilih Kategori',
-          prefixIcon: _isLoadingExistingCategory
+          prefixIcon: _isLoadingExistingDoc
               ? const Padding(
                   padding: EdgeInsets.all(14),
                   child: SizedBox(
@@ -835,7 +1069,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
             child: Text(category),
           );
         }).toList(),
-        onChanged: _isLoadingExistingCategory
+        onChanged: _isLoadingExistingDoc
             ? null
             : (value) {
                 if (value == null) return;
@@ -903,10 +1137,13 @@ class _AddMateriPageState extends State<AddMateriPage> {
   }
 
   Widget _buildQuestionCard(int index) {
-    final options = _ensureOptions(index);
+    _ensureControllersForIndex(index);
     final answer = _answerIndex(index);
+    final qCtrl = _questionControllers[index];
+    final optsCtrl = _optionControllers[index];
 
     return Card(
+      key: ObjectKey(tempQuiz[index]),
       margin: const EdgeInsets.only(bottom: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 3,
@@ -947,8 +1184,8 @@ class _AddMateriPageState extends State<AddMateriPage> {
               ],
             ),
             const SizedBox(height: 10),
-            TextFormField(
-              initialValue: (tempQuiz[index]['question'] ?? '').toString(),
+            TextField(
+              controller: qCtrl,
               onChanged: (value) => tempQuiz[index]['question'] = value,
               decoration: const InputDecoration(
                 hintText: 'Tulis pertanyaan literasi digital di sini...',
@@ -988,12 +1225,11 @@ class _AddMateriPageState extends State<AddMateriPage> {
                           color: Colors.grey[50],
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: TextFormField(
-                          initialValue: options[optionIndex],
+                        child: TextField(
+                          controller: optsCtrl[optionIndex],
                           onChanged: (value) {
-                            final currentOptions = _ensureOptions(index);
-                            currentOptions[optionIndex] = value;
-                            tempQuiz[index]['options'] = currentOptions;
+                            tempQuiz[index]['options'] =
+                                optsCtrl.map((c) => c.text).toList();
                           },
                           decoration: InputDecoration(
                             hintText:

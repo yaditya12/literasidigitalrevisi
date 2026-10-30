@@ -167,7 +167,7 @@ class _HomePageState extends State<HomePage> {
                     builder: (_) => AddMateriPage(
                       materi: item,
                       docId: docId,
-                      isQuizOnly: item.content.isEmpty,
+                      isQuizOnly: item.isQuizOnly,
                     ),
                   ),
                 );
@@ -1076,6 +1076,9 @@ class _HomePageState extends State<HomePage> {
                           final doc = docs[index];
                           final Map<String, dynamic> data = doc.data();
                           final bool isDraft = data['isDraft'] == true || data['status'] == 'draft';
+                          final bool isQuizOnly = data.containsKey('isQuizOnly')
+                              ? data['isQuizOnly'] == true
+                              : _stringValue(data, 'content', '').isEmpty;
 
                           final MateriModel item = MateriModel(
                             id: doc.id,
@@ -1088,9 +1091,8 @@ class _HomePageState extends State<HomePage> {
                             quiz: _parseQuiz(data['quiz']),
                             sourceLink: _stringValue(data, 'sourceLink', ''),
                             isDraft: isDraft,
+                            isQuizOnly: isQuizOnly,
                           );
-
-                          final bool isQuizOnly = item.content.trim().isEmpty;
                           final bool isOddNumber = (index + 1) % 2 != 0; // nomor ganjil = orange
 
                           return InkWell(
