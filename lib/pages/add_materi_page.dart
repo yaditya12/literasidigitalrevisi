@@ -101,7 +101,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
   late final TextEditingController _sourceLinkController;
 
   String _selectedCategory = 'Keamanan Digital';
-  List<Map<String, dynamic>> tempQuiz = [];
+  List<Map<String, dynamic>> tempQuiz = <Map<String, dynamic>>[];
   final List<TextEditingController> _questionControllers = [];
   final List<List<TextEditingController>> _optionControllers = [];
   bool _isLoading = false;
@@ -120,11 +120,11 @@ class _AddMateriPageState extends State<AddMateriPage> {
       _sourceLinkController =
           TextEditingController(text: widget.materi!.sourceLink ?? '');
       _isDraft = widget.materi!.isDraft;
-      tempQuiz = widget.materi!.quiz.map((questionData) {
+      tempQuiz = widget.materi!.quiz.map<Map<String, dynamic>>((questionData) {
         final options = _safeOptions(questionData['options']);
         final answer = _safeAnswer(questionData['answer']);
 
-        return {
+        return <String, dynamic>{
           'question': (questionData['question'] ?? '').toString(),
           'options': options,
           'answer': answer,
@@ -148,7 +148,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
       _titleController = TextEditingController();
       _contentController = TextEditingController();
       _sourceLinkController = TextEditingController();
-      tempQuiz = [];
+      tempQuiz = <Map<String, dynamic>>[];
 
       if (widget.docId != null) {
         _loadExistingDoc();
@@ -229,7 +229,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
                 final options = _safeOptions(qMap['options']);
                 final answer = _safeAnswer(qMap['answer']);
                 final qText = (qMap['question'] ?? '').toString();
-                tempQuiz.add({
+                tempQuiz.add(<String, dynamic>{
                   'question': qText,
                   'options': options,
                   'answer': answer,
@@ -296,9 +296,9 @@ class _AddMateriPageState extends State<AddMateriPage> {
 
   void _addQuestion() {
     setState(() {
-      tempQuiz.add({
+      tempQuiz.add(<String, dynamic>{
         'question': '',
-        'options': ['', '', '', ''],
+        'options': <String>['', '', '', ''],
         'answer': 0,
       });
       _questionControllers.add(TextEditingController());
