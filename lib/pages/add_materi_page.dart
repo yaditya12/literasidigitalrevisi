@@ -726,13 +726,13 @@ class _AddMateriPageState extends State<AddMateriPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildSectionHeader(Icons.quiz_rounded, 'Pertanyaan Kuis'),
+                Flexible(child: _buildSectionHeader(Icons.quiz_rounded, 'Pertanyaan Kuis')),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 4),
+                          horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
                         color: tempQuiz.length >= 5
                             ? Colors.green.shade50
@@ -747,7 +747,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
                       child: Text(
                         '${tempQuiz.length}/5 Soal',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 10,
                           fontWeight: FontWeight.bold,
                           color: tempQuiz.length >= 5
                               ? Colors.green.shade800
@@ -755,13 +755,15 @@ class _AddMateriPageState extends State<AddMateriPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 2),
                     TextButton.icon(
                       onPressed: _addQuestion,
-                      icon: const Icon(Icons.add_circle_outline),
-                      label: const Text('Tambah'),
-                      style:
-                          TextButton.styleFrom(foregroundColor: _primaryColor),
+                      icon: const Icon(Icons.add_circle_outline, size: 18),
+                      label: const Text('Tambah', style: TextStyle(fontSize: 12)),
+                      style: TextButton.styleFrom(
+                        foregroundColor: _primaryColor,
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                      ),
                     ),
                   ],
                 ),
@@ -841,12 +843,16 @@ class _AddMateriPageState extends State<AddMateriPage> {
                         onPressed: _saveDraft,
                         icon: const Icon(Icons.bookmark_add_outlined,
                             color: _primaryColor, size: 20),
-                        label: const Text(
-                          'SIMPAN DRAFT',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: _primaryColor,
+                        label: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'SIMPAN DRAFT',
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: _primaryColor,
+                            ),
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
@@ -869,14 +875,18 @@ class _AddMateriPageState extends State<AddMateriPage> {
                         onPressed: _publish,
                         icon: const Icon(Icons.rocket_launch_rounded,
                             color: Colors.white, size: 18),
-                        label: Text(
-                          widget.docId != null && !_isDraft
-                              ? 'UPDATE'
-                              : 'PUBLIKASIKAN',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: Colors.white,
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            widget.docId != null && !_isDraft
+                                ? 'UPDATE'
+                                : 'PUBLIKASIKAN',
+                            maxLines: 1,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
