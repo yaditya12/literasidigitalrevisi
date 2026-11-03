@@ -94,7 +94,7 @@ class AchievementsPage extends StatelessWidget {
                         crossAxisCount: 2,
                         crossAxisSpacing: 14,
                         mainAxisSpacing: 14,
-                        childAspectRatio: 0.78,
+                        childAspectRatio: 0.63,
                       ),
                       itemBuilder: (context, index) {
                         return _buildBadgeCard(achievements[index]);
@@ -338,57 +338,73 @@ class AchievementsPage extends StatelessWidget {
     final bool isUnlocked = item.unlocked;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isUnlocked
-              ? item.color.withOpacity(0.18)
-              : Colors.grey.withOpacity(0.10),
+              ? item.color.withOpacity(0.25)
+              : Colors.grey.shade200,
+          width: isUnlocked ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.035),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
+            color: isUnlocked
+                ? item.color.withOpacity(0.08)
+                : Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Icon lingkaran badge
           Container(
-            width: 62,
-            height: 62,
+            width: 54,
+            height: 54,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isUnlocked
                   ? item.color.withOpacity(0.14)
                   : Colors.grey.shade100,
+              border: Border.all(
+                color: isUnlocked
+                    ? item.color.withOpacity(0.3)
+                    : Colors.grey.shade300,
+                width: 1.5,
+              ),
             ),
             child: Icon(
               item.icon,
-              size: 29,
+              size: 26,
               color: isUnlocked ? item.color : Colors.grey.shade400,
             ),
           ),
-          const SizedBox(height: 14),
-          Text(
-            item.title,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: isUnlocked ? Colors.black87 : Colors.grey.shade500,
+          const SizedBox(height: 10),
+          // Judul badge dengan tinggi tetap agar sejajar antar kolom
+          SizedBox(
+            height: 38,
+            child: Center(
+              child: Text(
+                item.title,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  height: 1.25,
+                  color: isUnlocked ? Colors.black87 : Colors.grey.shade600,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 6),
+          // Deskripsi persyaratan badge yang jelas dan terbaca
           Expanded(
-            child: Align(
-              alignment: Alignment.topCenter,
+            child: Center(
               child: Text(
                 item.desc,
                 textAlign: TextAlign.center,
@@ -397,27 +413,51 @@ class AchievementsPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   height: 1.35,
-                  color: Colors.grey.shade500,
+                  color: Colors.grey.shade600,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+          // Status chip (Terbuka / Terkunci)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: isUnlocked
-                  ? Colors.green.withOpacity(0.12)
-                  : Colors.grey.withOpacity(0.10),
+                  ? const Color(0xFFE8F5E9)
+                  : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              isUnlocked ? 'Terbuka' : 'Terkunci',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: isUnlocked ? Colors.green : Colors.grey,
+              border: Border.all(
+                color: isUnlocked
+                    ? const Color(0xFFA5D6A7)
+                    : Colors.grey.shade300,
+                width: 0.8,
               ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isUnlocked
+                      ? Icons.check_circle_rounded
+                      : Icons.lock_outline_rounded,
+                  size: 12,
+                  color: isUnlocked
+                      ? const Color(0xFF2E7D32)
+                      : Colors.grey.shade600,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  isUnlocked ? 'Terbuka' : 'Terkunci',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: isUnlocked
+                        ? const Color(0xFF2E7D32)
+                        : Colors.grey.shade600,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
