@@ -94,7 +94,7 @@ class AchievementsPage extends StatelessWidget {
                         crossAxisCount: 2,
                         crossAxisSpacing: 14,
                         mainAxisSpacing: 14,
-                        childAspectRatio: 0.63,
+                        childAspectRatio: 0.58,
                       ),
                       itemBuilder: (context, index) {
                         return _buildBadgeCard(achievements[index]);
@@ -338,7 +338,7 @@ class AchievementsPage extends StatelessWidget {
     final bool isUnlocked = item.unlocked;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 16, 12, 14),
+      padding: const EdgeInsets.fromLTRB(10, 14, 10, 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
@@ -362,8 +362,8 @@ class AchievementsPage extends StatelessWidget {
         children: [
           // Icon lingkaran badge
           Container(
-            width: 54,
-            height: 54,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isUnlocked
@@ -378,25 +378,24 @@ class AchievementsPage extends StatelessWidget {
             ),
             child: Icon(
               item.icon,
-              size: 26,
+              size: 25,
               color: isUnlocked ? item.color : Colors.grey.shade400,
             ),
           ),
-          const SizedBox(height: 10),
-          // Judul badge dengan tinggi tetap agar sejajar antar kolom
-          SizedBox(
-            height: 38,
+          const SizedBox(height: 8),
+          // Judul badge - fleksibel dan TIDAK AKAN PERNAH terpotong
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 46),
             child: Center(
               child: Text(
                 item.title,
                 textAlign: TextAlign.center,
                 maxLines: 2,
-                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  height: 1.25,
-                  color: isUnlocked ? Colors.black87 : Colors.grey.shade600,
+                  height: 1.2,
+                  color: isUnlocked ? Colors.black87 : Colors.grey.shade700,
                 ),
               ),
             ),
@@ -409,7 +408,6 @@ class AchievementsPage extends StatelessWidget {
                 item.desc,
                 textAlign: TextAlign.center,
                 maxLines: 3,
-                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 11,
                   height: 1.35,

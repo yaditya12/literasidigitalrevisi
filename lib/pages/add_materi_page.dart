@@ -727,19 +727,42 @@ class _AddMateriPageState extends State<AddMateriPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _buildSectionHeader(Icons.quiz_rounded, 'Pertanyaan Kuis'),
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.quiz_rounded, color: _primaryColor, size: 20),
+                      const SizedBox(width: 8),
+                      const Flexible(
+                        child: Text(
+                          'Pertanyaan Kuis',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 TextButton.icon(
                   onPressed: _addQuestion,
-                  icon: const Icon(Icons.add_circle_outline, size: 20),
+                  icon: const Icon(Icons.add_circle_outline, size: 18),
                   label: const Text(
-                    'Tambah Soal',
+                    'Tambah',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                      fontSize: 12,
                     ),
                   ),
                   style: TextButton.styleFrom(
                     foregroundColor: _primaryColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ],
@@ -840,6 +863,28 @@ class _AddMateriPageState extends State<AddMateriPage> {
             ...tempQuiz.asMap().entries.map((entry) {
               return _buildQuestionCard(entry.key);
             }),
+            if (tempQuiz.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 4),
+                child: OutlinedButton.icon(
+                  onPressed: _addQuestion,
+                  icon: const Icon(Icons.add_circle_outline, color: _primaryColor, size: 18),
+                  label: const Text(
+                    'Tambah Soal Lainnya',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _primaryColor,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: _primaryColor, width: 1.2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    minimumSize: const Size(double.infinity, 44),
+                  ),
+                ),
+              ),
             const SizedBox(height: 35),
 
             // Tombol Simpan Draft & Publikasikan
