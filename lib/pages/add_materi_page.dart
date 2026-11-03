@@ -725,70 +725,88 @@ class _AddMateriPageState extends State<AddMateriPage> {
             ],
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Flexible(child: _buildSectionHeader(Icons.quiz_rounded, 'Pertanyaan Kuis')),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: tempQuiz.length >= 5
-                            ? Colors.green.shade50
-                            : Colors.orange.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: tempQuiz.length >= 5
-                              ? Colors.green.shade300
-                              : Colors.orange.shade300,
-                        ),
-                      ),
-                      child: Text(
-                        '${tempQuiz.length}/5 Soal',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: tempQuiz.length >= 5
-                              ? Colors.green.shade800
-                              : Colors.orange.shade900,
-                        ),
-                      ),
+                _buildSectionHeader(Icons.quiz_rounded, 'Pertanyaan Kuis'),
+                TextButton.icon(
+                  onPressed: _addQuestion,
+                  icon: const Icon(Icons.add_circle_outline, size: 20),
+                  label: const Text(
+                    'Tambah Soal',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
                     ),
-                    const SizedBox(width: 2),
-                    TextButton.icon(
-                      onPressed: _addQuestion,
-                      icon: const Icon(Icons.add_circle_outline, size: 18),
-                      label: const Text('Tambah', style: TextStyle(fontSize: 12)),
-                      style: TextButton.styleFrom(
-                        foregroundColor: _primaryColor,
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                      ),
-                    ),
-                  ],
+                  ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: _primaryColor,
+                  ),
                 ),
               ],
             ),
             Container(
-              margin: const EdgeInsets.only(top: 4, bottom: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              margin: const EdgeInsets.only(top: 6, bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.amber.shade50,
+                color: tempQuiz.length >= 5
+                    ? Colors.green.shade50
+                    : Colors.amber.shade50,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.amber.shade200),
+                border: Border.all(
+                  color: tempQuiz.length >= 5
+                      ? Colors.green.shade200
+                      : Colors.amber.shade200,
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline,
-                      size: 16, color: Colors.amber.shade900),
+                  Icon(
+                    tempQuiz.length >= 5
+                        ? Icons.check_circle_outline
+                        : Icons.info_outline,
+                    size: 18,
+                    color: tempQuiz.length >= 5
+                        ? Colors.green.shade700
+                        : Colors.amber.shade900,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Batas minimal kuis adalah 5 soal untuk dapat dipublikasikan ke siswa.',
+                      tempQuiz.length >= 5
+                          ? 'Minimal 5 soal terpenuhi (${tempQuiz.length} soal dibuat).'
+                          : 'Batas minimal kuis adalah 5 soal untuk dapat dipublikasikan ke siswa.',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.amber.shade900,
+                        color: tempQuiz.length >= 5
+                            ? Colors.green.shade900
+                            : Colors.amber.shade900,
                         fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: tempQuiz.length >= 5
+                          ? Colors.green.shade100
+                          : Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: tempQuiz.length >= 5
+                            ? Colors.green.shade300
+                            : Colors.orange.shade300,
+                      ),
+                    ),
+                    child: Text(
+                      '${tempQuiz.length}/5 Soal',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: tempQuiz.length >= 5
+                            ? Colors.green.shade900
+                            : Colors.orange.shade900,
                       ),
                     ),
                   ),
@@ -1091,6 +1109,7 @@ class _AddMateriPageState extends State<AddMateriPage> {
 
   Widget _buildSectionHeader(IconData icon, String title) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: _primaryColor, size: 22),
         const SizedBox(width: 8),
