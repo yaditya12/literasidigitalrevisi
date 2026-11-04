@@ -707,21 +707,23 @@ class _HomePageState extends State<HomePage> {
                           },
                         ),
                         const SizedBox(width: 15),
-                        _buildQuickMenu(
-                          context,
-                          Icons.edit_document,
-                          'Kelola\nSimulasi',
-                          Colors.orange,
-                          () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ManageSimulationPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 15),
+                        if (isTeacher) ...[
+                          _buildQuickMenu(
+                            context,
+                            Icons.edit_document,
+                            'Kelola\nSimulasi',
+                            Colors.orange,
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ManageSimulationPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 15),
+                        ],
                         _buildQuickMenu(
                           context,
                           Icons.bar_chart,

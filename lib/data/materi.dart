@@ -1,12 +1,11 @@
-
 class MateriModel {
   final String? id;
   final String title;
   final String content;
   final List<Map<String, dynamic>> quiz;
   final String? sourceLink;
-  final bool isDraft;
-  final bool isQuizOnly;
+  final bool isDraft; //draft belum di publikasikan
+  final bool isQuizOnly; //kuis saja isinya
 
   MateriModel({
     this.id,
@@ -35,9 +34,9 @@ List<MateriModel> materiList = [
           "Melindungi data pribadi di internet",
           "Menghapus semua data dari perangkat",
           "Menggunakan internet tanpa batas",
-          "Mengganti perangkat setiap tahun"
+          "Mengganti perangkat setiap tahun",
         ],
-        "answer": 0
+        "answer": 0,
       },
       {
         "question": "Contoh keamanan digital adalah…",
@@ -45,9 +44,9 @@ List<MateriModel> materiList = [
           "Menggunakan password 12345",
           "Aktifkan verifikasi dua langkah",
           "Bagikan data pribadi di media sosial",
-          "Gunakan WiFi publik untuk login bank"
+          "Gunakan WiFi publik untuk login bank",
         ],
-        "answer": 1
+        "answer": 1,
       },
       {
         "question": "WiFi publik sebaiknya tidak digunakan untuk…",
@@ -55,9 +54,9 @@ List<MateriModel> materiList = [
           "Streaming video",
           "Transaksi perbankan",
           "Browsing biasa",
-          "Membaca berita"
+          "Membaca berita",
         ],
-        "answer": 1
+        "answer": 1,
       },
       {
         "question": "Password yang kuat adalah…",
@@ -65,9 +64,9 @@ List<MateriModel> materiList = [
           "Tanggal lahir",
           "Nama pacar",
           "Kombinasi huruf, angka, simbol",
-          "Nomor HP"
+          "Nomor HP",
         ],
-        "answer": 2
+        "answer": 2,
       },
       {
         "question": "Tujuan utama keamanan digital adalah…",
@@ -75,10 +74,10 @@ List<MateriModel> materiList = [
           "Menghemat kuota",
           "Melindungi data pribadi",
           "Menambah followers",
-          "Mempercepat internet"
+          "Mempercepat internet",
         ],
-        "answer": 1
-      }
+        "answer": 1,
+      },
     ],
   ),
 
@@ -95,9 +94,9 @@ List<MateriModel> materiList = [
           "Aturan berkomunikasi online",
           "Cara membuat konten viral",
           "Cara mendapatkan like banyak",
-          "Cara hack akun orang"
+          "Cara hack akun orang",
         ],
-        "answer": 0
+        "answer": 0,
       },
       {
         "question": "Manakah yang termasuk etika yang baik?",
@@ -105,9 +104,9 @@ List<MateriModel> materiList = [
           "Menyebarkan data pribadi teman",
           "Menghina orang di komentar",
           "Menggunakan bahasa sopan",
-          "Menyebar rumor"
+          "Menyebar rumor",
         ],
-        "answer": 2
+        "answer": 2,
       },
       {
         "question": "Kenapa etika digital penting?",
@@ -115,9 +114,9 @@ List<MateriModel> materiList = [
           "Agar terlihat keren",
           "Untuk menjaga interaksi yang sehat",
           "Untuk mendapat banyak follower",
-          "Agar bisa bebas berkata apa saja"
+          "Agar bisa bebas berkata apa saja",
         ],
-        "answer": 1
+        "answer": 1,
       },
       {
         "question": "Contoh perilaku buruk di media sosial…",
@@ -125,9 +124,9 @@ List<MateriModel> materiList = [
           "Menyapa dengan ramah",
           "Menghormati privasi orang",
           "Ujaran kebencian",
-          "Berbagi konten positif"
+          "Berbagi konten positif",
         ],
-        "answer": 2
+        "answer": 2,
       },
       {
         "question": "Sebelum memposting sesuatu kita harus…",
@@ -135,10 +134,10 @@ List<MateriModel> materiList = [
           "Tidak perlu berpikir",
           "Cek dampak dan kebenaran",
           "Langsung viralkan",
-          "Tag semua orang"
+          "Tag semua orang",
         ],
-        "answer": 1
-      }
+        "answer": 1,
+      },
     ],
   ),
 
@@ -156,9 +155,9 @@ List<MateriModel> materiList = [
           "Informasi yang sudah lama",
           "Informasi dibuat untuk menyesatkan",
           "Berita dari TV nasional",
-          "Berita tanpa gambar"
+          "Berita tanpa gambar",
         ],
-        "answer": 1
+        "answer": 1,
       },
       {
         "question": "Cara mengenali berita palsu…",
@@ -166,9 +165,9 @@ List<MateriModel> materiList = [
           "Percaya semua informasi",
           "Cek sumber dan kebenaran",
           "Percaya judul sensasional",
-          "Forward tanpa membaca"
+          "Forward tanpa membaca",
         ],
-        "answer": 1
+        "answer": 1,
       },
       {
         "question": "Judul sensasional biasanya…",
@@ -176,9 +175,9 @@ List<MateriModel> materiList = [
           "Netral dan informatif",
           "Biasa saja",
           "Lebay dan memancing emosi",
-          "Selalu benar"
+          "Selalu benar",
         ],
-        "answer": 2
+        "answer": 2,
       },
       {
         "question": "Sebelum membagikan berita kita harus…",
@@ -186,9 +185,9 @@ List<MateriModel> materiList = [
           "Baca lengkap dulu",
           "Forward cepat",
           "Percaya karena banyak share",
-          "Tidak perlu cek sumber"
+          "Tidak perlu cek sumber",
         ],
-        "answer": 0
+        "answer": 0,
       },
       {
         "question": "Media terpercaya biasanya…",
@@ -196,10 +195,10 @@ List<MateriModel> materiList = [
           "Tidak jelas penulisnya",
           "Tidak punya alamat redaksi",
           "Memiliki standar jurnalistik",
-          "Hanya upload di Facebook"
+          "Hanya upload di Facebook",
         ],
-        "answer": 2
-      }
+        "answer": 2,
+      },
     ],
   ),
 ];
