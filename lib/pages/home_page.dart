@@ -73,7 +73,9 @@ class _HomePageState extends State<HomePage> {
                     child: const Icon(Icons.book, color: Colors.indigo),
                   ),
                   title: const Text('Teks Materi & Kuis'),
-                  subtitle: const Text('Ketik bahan bacaan dan kuis di aplikasi'),
+                  subtitle: const Text(
+                    'Ketik bahan bacaan dan kuis di aplikasi',
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -119,20 +121,28 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               Expanded(
                 child: Text(
                   item.title,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               if (item.isDraft) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.amber.shade100,
                     borderRadius: BorderRadius.circular(6),
@@ -176,7 +186,11 @@ class _HomePageState extends State<HomePage> {
             ),
             if (item.isDraft)
               TextButton.icon(
-                icon: const Icon(Icons.rocket_launch_rounded, size: 18, color: Color(0xFF00BFA5)),
+                icon: const Icon(
+                  Icons.rocket_launch_rounded,
+                  size: 18,
+                  color: Color(0xFF00BFA5),
+                ),
                 onPressed: () async {
                   if (item.quiz.length < 5) {
                     Navigator.pop(context);
@@ -195,45 +209,63 @@ class _HomePageState extends State<HomePage> {
                       .collection('materi')
                       .doc(docId)
                       .update({
-                    'isDraft': false,
-                    'status': 'published',
-                    'updatedAt': FieldValue.serverTimestamp(),
-                  });
+                        'isDraft': false,
+                        'status': 'published',
+                        'updatedAt': FieldValue.serverTimestamp(),
+                      });
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Materi/Kuis berhasil dipublikasikan ke siswa!'),
+                      content: Text(
+                        'Materi/Kuis berhasil dipublikasikan ke siswa!',
+                      ),
                       backgroundColor: Colors.green,
                     ),
                   );
                 },
-                label: const Text('Publikasikan', style: TextStyle(color: Color(0xFF00BFA5))),
+                label: const Text(
+                  'Publikasikan',
+                  style: TextStyle(color: Color(0xFF00BFA5)),
+                ),
               )
             else
               TextButton.icon(
-                icon: const Icon(Icons.archive_outlined, size: 18, color: Colors.orange),
+                icon: const Icon(
+                  Icons.archive_outlined,
+                  size: 18,
+                  color: Colors.orange,
+                ),
                 onPressed: () async {
                   Navigator.pop(context);
                   await FirebaseFirestore.instance
                       .collection('materi')
                       .doc(docId)
                       .update({
-                    'isDraft': true,
-                    'status': 'draft',
-                    'updatedAt': FieldValue.serverTimestamp(),
-                  });
+                        'isDraft': true,
+                        'status': 'draft',
+                        'updatedAt': FieldValue.serverTimestamp(),
+                      });
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Materi/Kuis dikembalikan ke status Draft.'),
+                      content: Text(
+                        'Materi/Kuis dikembalikan ke status Draft.',
+                      ),
                       backgroundColor: Colors.orange,
                     ),
                   );
                 },
-                label: const Text('Jadikan Draft', style: TextStyle(color: Colors.orange)),
+                label: const Text(
+                  'Jadikan Draft',
+                  style: TextStyle(color: Colors.orange),
+                ),
               ),
             TextButton.icon(
-              icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+              icon: const Icon(
+                Icons.delete_outline,
+                size: 18,
+                color: Colors.red,
+              ),
               onPressed: () async {
                 Navigator.pop(context);
                 await FirebaseFirestore.instance
@@ -241,10 +273,7 @@ class _HomePageState extends State<HomePage> {
                     .doc(docId)
                     .delete();
               },
-              label: const Text(
-                'Hapus',
-                style: TextStyle(color: Colors.red),
-              ),
+              label: const Text('Hapus', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -279,10 +308,7 @@ class _HomePageState extends State<HomePage> {
                   (_) => false,
                 );
               },
-              child: const Text(
-                'Keluar',
-                style: TextStyle(color: Colors.red),
-              ),
+              child: const Text('Keluar', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -294,18 +320,18 @@ class _HomePageState extends State<HomePage> {
     final String cleanLink = link.trim();
 
     if (cleanLink.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Link materi kosong')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Link materi kosong')));
       return;
     }
 
     final Uri? url = Uri.tryParse(cleanLink);
 
     if (url == null || !url.hasScheme) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Format link tidak valid')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Format link tidak valid')));
       return;
     }
 
@@ -335,7 +361,8 @@ class _HomePageState extends State<HomePage> {
     final String imageUrl = coverUrl.trim().isNotEmpty
         ? coverUrl.trim()
         : _defaultCoverUrl;
-    final bool isDraftMateri = materiData?['isDraft'] == true || materiData?['status'] == 'draft';
+    final bool isDraftMateri =
+        materiData?['isDraft'] == true || materiData?['status'] == 'draft';
     final Color primaryColor = userRole == 'teacher'
         ? const Color(0xFF00BFA5)
         : const Color(0xFF6A11CB);
@@ -380,7 +407,10 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     if (isDraftMateri && userRole == 'teacher') ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.amber.shade50,
                           borderRadius: BorderRadius.circular(8),
@@ -389,7 +419,11 @@ class _HomePageState extends State<HomePage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.edit_note, size: 16, color: Colors.amber.shade800),
+                            Icon(
+                              Icons.edit_note,
+                              size: 16,
+                              color: Colors.amber.shade800,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               'DRAFT',
@@ -435,14 +469,11 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       userRole == 'teacher'
                           ? (isDraftMateri
-                              ? 'Draft ini belum terlihat oleh siswa. Edit atau publikasikan.'
-                              : 'Anda dapat membuka atau menghapus materi ini.')
+                                ? 'Draft ini belum terlihat oleh siswa. Edit atau publikasikan.'
+                                : 'Anda dapat membuka atau menghapus materi ini.')
                           : 'Materi ini akan dibuka di browser/aplikasi Anda.',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 13,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 13),
                     ),
                     const SizedBox(height: 25),
                     if (userRole == 'teacher') ...[
@@ -457,9 +488,7 @@ class _HomePageState extends State<HomePage> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                side: const BorderSide(
-                                  color: Colors.redAccent,
-                                ),
+                                side: const BorderSide(color: Colors.redAccent),
                               ),
                               onPressed: () async {
                                 Navigator.pop(context);
@@ -484,9 +513,7 @@ class _HomePageState extends State<HomePage> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                side: BorderSide(
-                                  color: primaryColor,
-                                ),
+                                side: BorderSide(color: primaryColor),
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
@@ -500,7 +527,11 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 );
                               },
-                              icon: Icon(Icons.edit, size: 16, color: primaryColor),
+                              icon: Icon(
+                                Icons.edit,
+                                size: 16,
+                                color: primaryColor,
+                              ),
                               label: Text(
                                 'Edit',
                                 style: TextStyle(
@@ -661,23 +692,6 @@ class _HomePageState extends State<HomePage> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (isTeacher) ...[
-                          _buildQuickMenu(
-                            context,
-                            Icons.edit_document,
-                            'Kelola\nSimulasi',
-                            Colors.orange,
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const ManageSimulationPage(),
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 15),
-                        ],
                         _buildQuickMenu(
                           context,
                           Icons.add,
@@ -688,6 +702,21 @@ class _HomePageState extends State<HomePage> {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const JoinQuizPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 15),
+                        _buildQuickMenu(
+                          context,
+                          Icons.edit_document,
+                          'Kelola\nSimulasi',
+                          Colors.orange,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ManageSimulationPage(),
                               ),
                             );
                           },
@@ -808,7 +837,9 @@ class _HomePageState extends State<HomePage> {
                       ? allDocs
                       : allDocs.where((doc) {
                           final data = doc.data();
-                          final isDraft = data['isDraft'] == true || data['status'] == 'draft';
+                          final isDraft =
+                              data['isDraft'] == true ||
+                              data['status'] == 'draft';
                           return !isDraft;
                         }).toList();
 
@@ -826,7 +857,9 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
 
-                  final int itemCount = isTeacher ? docs.length + 1 : docs.length;
+                  final int itemCount = isTeacher
+                      ? docs.length + 1
+                      : docs.length;
 
                   return SliverToBoxAdapter(
                     child: Container(
@@ -887,14 +920,25 @@ class _HomePageState extends State<HomePage> {
                           final doc = docs[dataIndex];
                           final Map<String, dynamic> materi = doc.data();
 
-                          final String title =
-                              _stringValue(materi, 'title', 'Tanpa Judul');
-                          final String type =
-                              _stringValue(materi, 'type', 'Materi');
-                          final String cover =
-                              _stringValue(materi, 'cover', _defaultCoverUrl);
+                          final String title = _stringValue(
+                            materi,
+                            'title',
+                            'Tanpa Judul',
+                          );
+                          final String type = _stringValue(
+                            materi,
+                            'type',
+                            'Materi',
+                          );
+                          final String cover = _stringValue(
+                            materi,
+                            'cover',
+                            _defaultCoverUrl,
+                          );
                           final String link = _stringValue(materi, 'link', '');
-                          final bool isDraftItem = materi['isDraft'] == true || materi['status'] == 'draft';
+                          final bool isDraftItem =
+                              materi['isDraft'] == true ||
+                              materi['status'] == 'draft';
 
                           return GestureDetector(
                             onTap: () {
@@ -923,8 +967,9 @@ class _HomePageState extends State<HomePage> {
                                         borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
                                           BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.15),
+                                            color: Colors.black.withOpacity(
+                                              0.15,
+                                            ),
                                             blurRadius: 6,
                                             offset: const Offset(2, 4),
                                           ),
@@ -936,8 +981,9 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                       child: Container(
                                         decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                           gradient: LinearGradient(
                                             begin: Alignment.bottomCenter,
                                             end: Alignment.topCenter,
@@ -987,7 +1033,10 @@ class _HomePageState extends State<HomePage> {
                                   if (isTeacher && isDraftItem) ...[
                                     const SizedBox(height: 4),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: Colors.amber.shade100,
                                         borderRadius: BorderRadius.circular(6),
@@ -1043,7 +1092,8 @@ class _HomePageState extends State<HomePage> {
                   final docs = rawDocs.where((doc) {
                     if (isTeacher) return true;
                     final data = doc.data();
-                    final isDraft = data['isDraft'] == true || data['status'] == 'draft';
+                    final isDraft =
+                        data['isDraft'] == true || data['status'] == 'draft';
                     return !isDraft;
                   }).toList();
 
@@ -1066,171 +1116,169 @@ class _HomePageState extends State<HomePage> {
                     sliver: SliverGrid(
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 15,
-                        crossAxisSpacing: 15,
-                        mainAxisExtent: 185,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final doc = docs[index];
-                          final Map<String, dynamic> data = doc.data();
-                          final bool isDraft = data['isDraft'] == true || data['status'] == 'draft';
-                          final bool isQuizOnly = data.containsKey('isQuizOnly')
-                              ? data['isQuizOnly'] == true
-                              : _stringValue(data, 'content', '').isEmpty;
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 15,
+                            crossAxisSpacing: 15,
+                            mainAxisExtent: 185,
+                          ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final doc = docs[index];
+                        final Map<String, dynamic> data = doc.data();
+                        final bool isDraft =
+                            data['isDraft'] == true ||
+                            data['status'] == 'draft';
+                        final bool isQuizOnly = data.containsKey('isQuizOnly')
+                            ? data['isQuizOnly'] == true
+                            : _stringValue(data, 'content', '').isEmpty;
 
-                          final MateriModel item = MateriModel(
-                            id: doc.id,
-                            title: _stringValue(
-                              data,
-                              'title',
-                              'Tanpa Judul',
+                        final MateriModel item = MateriModel(
+                          id: doc.id,
+                          title: _stringValue(data, 'title', 'Tanpa Judul'),
+                          content: _stringValue(data, 'content', ''),
+                          quiz: _parseQuiz(data['quiz']),
+                          sourceLink: _stringValue(data, 'sourceLink', ''),
+                          isDraft: isDraft,
+                          isQuizOnly: isQuizOnly,
+                        );
+                        final bool isOddNumber =
+                            (index + 1) % 2 != 0; // nomor ganjil = orange
+
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () {
+                            if (item.isDraft && isTeacher) {
+                              _showOptionsDialog(doc.id, item);
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => MateriPage(materi: item),
+                                ),
+                              );
+                            }
+                          },
+                          onLongPress: isTeacher
+                              ? () => _showOptionsDialog(doc.id, item)
+                              : null,
+                          child: Container(
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: isOddNumber
+                                  ? Colors.orange.shade400
+                                  : Colors.indigo.shade300,
+                              borderRadius: BorderRadius.circular(20),
+                              border: isDraft
+                                  ? Border.all(
+                                      color: Colors.amber.shade200,
+                                      width: 2,
+                                    )
+                                  : null,
                             ),
-                            content: _stringValue(data, 'content', ''),
-                            quiz: _parseQuiz(data['quiz']),
-                            sourceLink: _stringValue(data, 'sourceLink', ''),
-                            isDraft: isDraft,
-                            isQuizOnly: isQuizOnly,
-                          );
-                          final bool isOddNumber = (index + 1) % 2 != 0; // nomor ganjil = orange
-
-                          return InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            onTap: () {
-                              if (item.isDraft && isTeacher) {
-                                _showOptionsDialog(doc.id, item);
-                              } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => MateriPage(materi: item),
-                                  ),
-                                );
-                              }
-                            },
-                            onLongPress: isTeacher
-                                ? () => _showOptionsDialog(doc.id, item)
-                                : null,
-                            child: Container(
-                              padding: const EdgeInsets.all(15),
-                              decoration: BoxDecoration(
-                                color: isOddNumber
-                                    ? Colors.orange.shade400
-                                    : Colors.indigo.shade300,
-                                borderRadius: BorderRadius.circular(20),
-                                border: isDraft
-                                    ? Border.all(color: Colors.amber.shade200, width: 2)
-                                    : null,
-                              ),
-                              child: Stack(
-                                children: [
-                                  if (item.isDraft)
-                                    Positioned(
-                                      top: 0,
-                                      left: 0,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.amber.shade400,
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: const Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              Icons.edit_note_rounded,
-                                              size: 11,
-                                              color: Colors.black87,
-                                            ),
-                                            SizedBox(width: 2),
-                                            Text(
-                                              'DRAFT',
-                                              style: TextStyle(
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w900,
-                                                color: Colors.black87,
-                                                letterSpacing: 0.5,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                            child: Stack(
+                              children: [
+                                if (item.isDraft)
+                                  Positioned(
+                                    top: 0,
+                                    left: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
                                       ),
-                                    ),
-                                  Positioned.fill(
-                                    child: Padding(
-                                      padding:
-                                          const EdgeInsets.only(top: 25),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                      decoration: BoxDecoration(
+                                        color: Colors.amber.shade400,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Flexible(
-                                            child: Text(
-                                              item.title,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                              maxLines: 5,
-                                              overflow:
-                                                  TextOverflow.ellipsis,
-                                            ),
+                                          Icon(
+                                            Icons.edit_note_rounded,
+                                            size: 11,
+                                            color: Colors.black87,
                                           ),
-                                          const SizedBox(height: 5),
+                                          SizedBox(width: 2),
                                           Text(
-                                            isQuizOnly
-                                                ? 'Tantangan Kuis'
-                                                : 'Materi & Kuis',
+                                            'DRAFT',
                                             style: TextStyle(
-                                              color: Colors.white
-                                                  .withOpacity(0.9),
-                                              fontSize: 10,
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.black87,
+                                              letterSpacing: 0.5,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  Positioned(
-                                    top: 0,
-                                    right: 0,
-                                    child: Container(
-                                      width: 26,
-                                      height: 26,
-                                      padding: const EdgeInsets.all(3),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          '${index + 1}',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: isOddNumber
-                                                ? Colors.orange.shade700
-                                                : Colors.indigo.shade400,
+                                Positioned.fill(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 25),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            item.title,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                            maxLines: 5,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          isQuizOnly
+                                              ? 'Tantangan Kuis'
+                                              : 'Materi & Kuis',
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(
+                                              0.9,
+                                            ),
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  child: Container(
+                                    width: 26,
+                                    height: 26,
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: isOddNumber
+                                              ? Colors.orange.shade700
+                                              : Colors.indigo.shade400,
                                         ),
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                        childCount: docs.length,
-                      ),
+                          ),
+                        );
+                      }, childCount: docs.length),
                     ),
                   );
                 },
@@ -1297,11 +1345,7 @@ class _HomePageState extends State<HomePage> {
               end: Alignment.bottomRight,
             ),
           ),
-          padding: const EdgeInsets.only(
-            top: 125,
-            left: 20,
-            right: 20,
-          ),
+          padding: const EdgeInsets.only(top: 125, left: 20, right: 20),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1313,9 +1357,7 @@ class _HomePageState extends State<HomePage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const ProfilePage(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const ProfilePage()),
                       );
                     },
                     child: CircleAvatar(
@@ -1331,10 +1373,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       const Text(
                         'Selamat Datang!',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                       Text(
                         name,
@@ -1361,9 +1400,7 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const LeaderboardPage(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const LeaderboardPage()),
                   );
                 },
                 child: Container(
