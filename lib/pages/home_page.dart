@@ -661,6 +661,23 @@ class _HomePageState extends State<HomePage> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (isTeacher) ...[
+                          _buildQuickMenu(
+                            context,
+                            Icons.edit_document,
+                            'Kelola\nSimulasi',
+                            Colors.orange,
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ManageSimulationPage(),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 15),
+                        ],
                         _buildQuickMenu(
                           context,
                           Icons.add,
@@ -735,23 +752,6 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         ),
-                        if (isTeacher) ...[
-                          const SizedBox(width: 15),
-                          _buildQuickMenu(
-                            context,
-                            Icons.edit_document,
-                            'Kelola',
-                            Colors.orange,
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const ManageSimulationPage(),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
                         const SizedBox(width: 15),
                         _buildQuickMenu(
                           context,
@@ -1447,15 +1447,21 @@ class _HomePageState extends State<HomePage> {
               child: Icon(icon, color: Colors.white, size: 24),
             ),
             const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
+            SizedBox(
+              height: 26,
+              child: Center(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    height: 1.15,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
